@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 25% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 25% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 25% 12%;
+    --primary: 162 70% 63%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 162 60% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 162 70% 94%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 214 20% 90%;
+    --input: 214 20% 90%;
+    --ring: 162 70% 63%;
+    --radius: 0.75rem;
+    --chart-1: 162 70% 63%;
+    --chart-2: 200 70% 50%;
+    --chart-3: 280 65% 60%;
+    --chart-4: 30 90% 55%;
+    --chart-5: 340 75% 55%;
+  }
+  .dark {
+    --background: 222 47% 8%;
+    --foreground: 0 0% 98%;
+    --card: 222 47% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 222 47% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 162 70% 63%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 217 33% 20%;
+    --input: 217 33% 20%;
+    --ring: 162 70% 63%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground; font-feature-settings: "rlig" 1, "calt" 1; }
+  html { scroll-behavior: smooth; }
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #60e3bb 0%, #2dd4bf 50%, #14b8a6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-glow {
+  background: radial-gradient(ellipse at top, rgba(96, 227, 187, 0.25), transparent 60%);
+}
+
+.grid-pattern {
+  background-image: linear-gradient(rgba(96,227,187,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(96,227,187,0.08) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
