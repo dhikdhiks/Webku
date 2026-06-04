@@ -1,8 +1,8 @@
 'use client'
+import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import Image from 'next/image'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
@@ -10,15 +10,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { toast } from 'sonner'
 import { api, formatRupiah, waLink } from '@/lib/api'
-import { useEffect, useMemo, useState, useCallback } from 'react'
 import {
   Rocket, MessageCircle, Sparkles, Globe, Smartphone, Search, ShieldCheck, Zap, Headset,
   CheckCircle2, ArrowRight, Star, Phone, Mail, MapPin, Send, Quote, BookOpen,
-  Palette, Image as ImageIcon, FileImage, FileText, Briefcase, Package as PackageIcon,
+  Palette, Image as ImageIcon, FileImage, FileText, Briefcase, Instagram, Package as PackageIcon,
   CreditCard, Menu as MenuIcon, X,
 } from 'lucide-react'
-// Add Instagram separately:
-import { Instagram } from "lucide-react"
 
 const WA_DEFAULT = '6281227225178'
 
@@ -195,43 +192,9 @@ function Steps() {
   )
 }
 
-function Catalog({ categories, whatsapp, onPesan, onDetail }) {
+function Catalog({ demos, categories, whatsapp, onPesan, onDetail }) {
   const [cat, setCat] = useState('all')
-  const [search, setSearch] = useState('')
-  const [priceRange, setPriceRange] = useState([0, 10000000])
-  const [page, setPage] = useState(1)
-  const [loading, setLoading] = useState(false)
-  const [data, setData] = useState({ items: [], total: 0, totalPages: 0 })
-
-  const fetchDemos = useCallback(async () => {
-    setLoading(true)
-    try {
-      const params = new URLSearchParams({
-        category: cat,
-        search,
-        minPrice: priceRange[0],
-        maxPrice: priceRange[1],
-        page,
-        limit: 9
-      })
-      const res = await api(`demos?${params.toString()}`)
-      setData(res)
-    } catch (err) {
-      toast.error('Gagal memuat data')
-    } finally {
-      setLoading(false)
-    }
-  }, [cat, search, priceRange, page])
-
-  useEffect(() => {
-    fetchDemos()
-  }, [fetchDemos])
-
-  const handlePageChange = (newPage) => {
-    setPage(newPage)
-    window.scrollTo({ top: document.getElementById('katalog').offsetTop - 100, behavior: 'smooth' })
-  }
-
+  const filtered = useMemo(() => cat === 'all' ? demos : demos.filter(d => d.categorySlug === cat), [demos, cat])
   return (
     <section id="katalog" className="py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
@@ -240,78 +203,35 @@ function Catalog({ categories, whatsapp, onPesan, onDetail }) {
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Lihat Demo Website Kami</h2>
           <p className="mt-4 text-muted-foreground">Pilih template sesuai bisnis Anda. Bisa custom sesuai keinginan.</p>
         </div>
-
-        {/* Filter Bar */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="flex-1">
-            <Input
-              placeholder="Cari template..."
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-              className="bg-white"
-            />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-3">
-              <span className="text-sm whitespace-nowrap">Rp{priceRange[0].toLocaleString()}</span>
-              <input
-                type="range"
-                min="0"
-                max="10000000"
-                step="500000"
-                value={priceRange[0]}
-                onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
-              />
-              <span className="text-sm whitespace-nowrap">- Rp{priceRange[1].toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Kategori Chips */}
         <div className="flex flex-wrap justify-center gap-2 mb-10">
-          <Button size="sm" variant={cat === 'all' ? 'default' : 'outline'} onClick={() => { setCat('all'); setPage(1) }}>Semua</Button>
+          <Button size="sm" variant={cat === 'all' ? 'default' : 'outline'} onClick={() => setCat('all')} className={cat === 'all' ? 'bg-primary text-primary-foreground' : ''}>Semua</Button>
           {categories.map(c => (
-            <Button key={c.id} size="sm" variant={cat === c.slug ? 'default' : 'outline'} onClick={() => { setCat(c.slug); setPage(1) }}>
+            <Button key={c.slug} size="sm" variant={cat === c.slug ? 'default' : 'outline'} onClick={() => setCat(c.slug)} className={cat === c.slug ? 'bg-primary text-primary-foreground' : ''}>
               {c.name}
             </Button>
           ))}
         </div>
-
-        {loading ? (
-          <div className="text-center py-12">Memuat...</div>
-        ) : (
-          <>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {data.items.map(d => (
-                <Card key={d.id} className="overflow-hidden group hover:shadow-2xl hover:shadow-primary/10 transition-all border-border/60">
-                  <div className="aspect-video overflow-hidden bg-muted relative">
-                    <img src={d.thumbnail} alt={d.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                    <Badge className="absolute top-3 left-3 bg-background/90 text-foreground backdrop-blur">{d.category}</Badge>
-                  </div>
-                  <CardContent className="p-5">
-                    <h3 className="font-semibold text-lg">{d.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{d.description}</p>
-                    <div className="mt-3 text-primary font-bold">{formatRupiah(d.price)}</div>
-                    <div className="mt-4 flex gap-2">
-                      <Button size="sm" variant="outline" className="flex-1 rounded-full" onClick={() => onDetail(d)}>Detail</Button>
-                      <Button size="sm" className="flex-1 bg-primary text-primary-foreground rounded-full" onClick={() => onPesan(d)}>Pesan</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            {data.items.length === 0 && (
-              <div className="text-center py-12 text-muted-foreground">Tidak ada demo yang cocok dengan filter.</div>
-            )}
-            {data.totalPages > 1 && (
-              <div className="flex justify-center gap-2 mt-10">
-                <Button variant="outline" disabled={page === 1} onClick={() => handlePageChange(page - 1)}>Sebelumnya</Button>
-                <span className="py-2 px-4 bg-muted rounded">Halaman {page} dari {data.totalPages}</span>
-                <Button variant="outline" disabled={page === data.totalPages} onClick={() => handlePageChange(page + 1)}>Selanjutnya</Button>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filtered.slice(0, 9).map(d => (
+            <Card key={d.id} className="overflow-hidden group hover:shadow-2xl hover:shadow-primary/10 transition-all border-border/60">
+              <div className="aspect-video overflow-hidden bg-muted relative">
+                <img src={d.thumbnail} alt={d.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                <Badge className="absolute top-3 left-3 bg-background/90 text-foreground backdrop-blur">{d.category}</Badge>
               </div>
-            )}
-          </>
+              <CardContent className="p-5">
+                <h3 className="font-semibold text-lg">{d.name}</h3>
+                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{d.description}</p>
+                <div className="mt-3 text-primary font-bold">{formatRupiah(d.price)}</div>
+                <div className="mt-4 flex gap-2">
+                  <Button size="sm" variant="outline" className="flex-1 rounded-full" onClick={() => onDetail(d)}>Detail</Button>
+                  <Button size="sm" className="flex-1 bg-primary text-primary-foreground rounded-full" onClick={() => onPesan(d)}>Pesan</Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        {filtered.length === 0 && (
+          <div className="text-center py-12 text-muted-foreground">Belum ada demo untuk kategori ini.</div>
         )}
       </div>
     </section>
@@ -606,6 +526,7 @@ function WhatsAppFloating({ whatsapp }) {
 
 export default function App() {
   const [categories, setCategories] = useState([])
+  const [demos, setDemos] = useState([])
   const [packages, setPackages] = useState([])
   const [services, setServices] = useState([])
   const [testimonials, setTestimonials] = useState([])
@@ -622,6 +543,7 @@ export default function App() {
       try {
         const [cats, dms, pkg, svc, tst, fq, art, st] = await Promise.all([
           api('categories'),
+          api('demos'),
           api('packages'),
           api('services'),
           api('testimonials'),
@@ -653,7 +575,7 @@ export default function App() {
         <Hero stats={stats} onCTAClick={onCTA} whatsapp={whatsapp} />
         <Advantages />
         <Steps />
-        <Catalog categories={categories} whatsapp={whatsapp} onPesan={openOrder} onDetail={setDetail} />
+        <Catalog demos={demos} categories={categories} whatsapp={whatsapp} onPesan={openOrder} onDetail={setDetail} />
         <Packages packages={packages} onPesan={openOrder} />
         <Services services={services} onPesan={openOrder} />
         <Testimonials list={testimonials} />

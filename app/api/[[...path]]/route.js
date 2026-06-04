@@ -226,43 +226,12 @@ async function handler(request, { params }) {
       return j(items.map(({ _id, ...r }) => r))
     }
 
-if (path === 'demos' && method === 'GET') {
-  const cat = url.searchParams.get('category')
-  const search = url.searchParams.get('search')
-  const minPrice = parseInt(url.searchParams.get('minPrice')) || 0
-  const maxPrice = parseInt(url.searchParams.get('maxPrice')) || 10000000
-  const page = parseInt(url.searchParams.get('page')) || 1
-  const limit = parseInt(url.searchParams.get('limit')) || 9
-  const skip = (page - 1) * limit
-
-  let filter = {}
-  if (cat && cat !== 'all') filter.categorySlug = cat
-  if (search && search.trim()) {
-    filter.$or = [
-      { name: { $regex: search, $options: 'i' } },
-      { description: { $regex: search, $options: 'i' } }
-    ]
-  }
-  filter.price = { $gte: minPrice, $lte: maxPrice }
-
-  const total = await db.collection('website_demos').countDocuments(filter)
-  const items = await db.collection('website_demos')
-    .find(filter)
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .toArray()
-
-  // Tambahkan cache header
-  const response = j({
-    items: items.map(({ _id, ...r }) => r),
-    total,
-    page,
-    totalPages: Math.ceil(total / limit)
-  })
-  response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300')
-  return response
-}
+    if (path === 'demos' && method === 'GET') {
+      const cat = url.searchParams.get('category')
+      const q = cat && cat !== 'all' ? { categorySlug: cat } : {}
+      const items = await db.collection('website_demos').find(q).sort({ createdAt: -1 }).toArray()
+      return j(items.map(({ _id, ...r }) => r))
+    }
 
     if (path.startsWith('demos/') && method === 'GET') {
       const slug = path.split('/')[1]
@@ -581,5 +550,3 @@ export const POST = handler
 export const PUT = handler
 export const PATCH = handler
 export const DELETE = handler
-
-export const runtime = 'nodejs'
