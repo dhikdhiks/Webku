@@ -303,16 +303,16 @@ async function handler(request, { params }) {
     const authHeader = request.headers.get('x-admin-pass') || ''
     const isAdmin = authHeader === ADMIN_PASSWORD
 
-    if (path === 'admin/login' && method === 'POST') {
+    if (path === '23_webku_8login' && method === 'POST') {
       const body = await request.json()
       if (body.password === ADMIN_PASSWORD) return j({ ok: true, token: ADMIN_PASSWORD })
       return j({ error: 'Password salah' }, 401)
     }
 
-    if (path.startsWith('admin/')) {
+    if (path.startsWith('23_webku_8')) {
       if (!isAdmin) return j({ error: 'Unauthorized' }, 401)
 
-      if (path === 'admin/stats' && method === 'GET') {
+      if (path === '23_webku_8stats' && method === 'GET') {
         const [demos, articles, inquiries, services, visits] = await Promise.all([
           db.collection('website_demos').countDocuments(),
           db.collection('articles').countDocuments(),
@@ -324,26 +324,26 @@ async function handler(request, { params }) {
         return j({ demos, articles, inquiries, services, visits, newInquiries: newInq })
       }
 
-      if (path === 'admin/inquiries' && method === 'GET') {
+      if (path === '23_webku_8inquiries' && method === 'GET') {
         const items = await db.collection('inquiries').find({}).sort({ createdAt: -1 }).toArray()
         return j(items.map(({ _id, ...r }) => r))
       }
 
-      if (path.startsWith('admin/inquiries/') && method === 'PATCH') {
+      if (path.startsWith('23_webku_8inquiries/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
         await db.collection('inquiries').updateOne({ id }, { $set: { status: body.status } })
         return j({ ok: true })
       }
 
-      if (path.startsWith('admin/inquiries/') && method === 'DELETE') {
+      if (path.startsWith('23_webku_8inquiries/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('inquiries').deleteOne({ id })
         return j({ ok: true })
       }
 
       // ===== ADMIN DEMOS =====
-      if (path === 'admin/demos' && method === 'POST') {
+      if (path === '23_webku_8demos' && method === 'POST') {
         const body = await request.json()
         const doc = {
           id: uuidv4(),
@@ -363,7 +363,7 @@ async function handler(request, { params }) {
         await db.collection('website_demos').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-      if (path.startsWith('admin/demos/') && method === 'PATCH') {
+      if (path.startsWith('23_webku_8demos/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
         await db.collection('website_demos').updateOne(
@@ -383,14 +383,14 @@ async function handler(request, { params }) {
         )
         return j({ ok: true })
       }
-      if (path.startsWith('admin/demos/') && method === 'DELETE') {
+      if (path.startsWith('23_webku_8demos/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('website_demos').deleteOne({ id })
         return j({ ok: true })
       }
 
       // ===== ADMIN ARTICLES =====
-      if (path === 'admin/articles' && method === 'POST') {
+      if (path === '23_webku_8articles' && method === 'POST') {
         const body = await request.json()
         const doc = {
           id: uuidv4(),
@@ -405,7 +405,7 @@ async function handler(request, { params }) {
         await db.collection('articles').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-      if (path.startsWith('admin/articles/') && method === 'PATCH') {
+      if (path.startsWith('23_webku_8articles/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
         await db.collection('articles').updateOne(
@@ -423,14 +423,14 @@ async function handler(request, { params }) {
         )
         return j({ ok: true })
       }
-      if (path.startsWith('admin/articles/') && method === 'DELETE') {
+      if (path.startsWith('23_webku_8articles/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('articles').deleteOne({ id })
         return j({ ok: true })
       }
 
       // ===== ADMIN PACKAGES =====
-      if (path === 'admin/packages' && method === 'POST') {
+      if (path === '23_webku_8packages' && method === 'POST') {
         const body = await request.json()
         const doc = {
           id: uuidv4(),
@@ -443,7 +443,7 @@ async function handler(request, { params }) {
         await db.collection('packages').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-      if (path.startsWith('admin/packages/') && method === 'PATCH') {
+      if (path.startsWith('23_webku_8packages/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
         await db.collection('packages').updateOne(
@@ -459,14 +459,14 @@ async function handler(request, { params }) {
         )
         return j({ ok: true })
       }
-      if (path.startsWith('admin/packages/') && method === 'DELETE') {
+      if (path.startsWith('23_webku_8packages/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('packages').deleteOne({ id })
         return j({ ok: true })
       }
 
       // ===== ADMIN SERVICES =====
-      if (path === 'admin/services' && method === 'POST') {
+      if (path === '23_webku_8services' && method === 'POST') {
         const body = await request.json()
         const doc = {
           id: uuidv4(),
@@ -479,7 +479,7 @@ async function handler(request, { params }) {
         await db.collection('services').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-      if (path.startsWith('admin/services/') && method === 'PATCH') {
+      if (path.startsWith('23_webku_8services/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
         await db.collection('services').updateOne(
@@ -495,14 +495,14 @@ async function handler(request, { params }) {
         )
         return j({ ok: true })
       }
-      if (path.startsWith('admin/services/') && method === 'DELETE') {
+      if (path.startsWith('23_webku_8services/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('services').deleteOne({ id })
         return j({ ok: true })
       }
 
       // ===== ADMIN TESTIMONIALS =====
-      if (path === 'admin/testimonials' && method === 'POST') {
+      if (path === '23_webku_8testimonials' && method === 'POST') {
         const body = await request.json()
         const doc = {
           id: uuidv4(),
@@ -515,7 +515,7 @@ async function handler(request, { params }) {
         await db.collection('testimonials').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-      if (path.startsWith('admin/testimonials/') && method === 'PATCH') {
+      if (path.startsWith('23_webku_8testimonials/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
         await db.collection('testimonials').updateOne(
@@ -531,7 +531,7 @@ async function handler(request, { params }) {
         )
         return j({ ok: true })
       }
-      if (path.startsWith('admin/testimonials/') && method === 'DELETE') {
+      if (path.startsWith('23_webku_8testimonials/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('testimonials').deleteOne({ id })
         return j({ ok: true })

@@ -496,7 +496,6 @@ function Footer() {
               <li><a href="#tentang" className="hover:text-foreground">Tentang Kami</a></li>
               <li><a href="#blog" className="hover:text-foreground">Blog</a></li>
               <li><a href="#faq" className="hover:text-foreground">FAQ</a></li>
-              <li><a href="/admin" className="hover:text-foreground">Admin</a></li>
             </ul>
           </div>
           <div>

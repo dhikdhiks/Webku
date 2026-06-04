@@ -20,7 +20,7 @@ function Login({ onLogin }) {
     e.preventDefault()
     setLoading(true)
     try {
-      const r = await api('admin/login', { method: 'POST', body: JSON.stringify({ password: pass }) })
+      const r = await api('23_webku_8login', { method: 'POST', body: JSON.stringify({ password: pass }) })
       localStorage.setItem(PASS_KEY, r.token)
       onLogin(r.token)
       toast.success('Berhasil login')
@@ -72,7 +72,7 @@ function StatCard({ title, value, icon: Icon, hint }) {
 
 function Dashboard({ token }) {
   const [stats, setStats] = useState(null)
-  useEffect(() => { api('admin/stats', { headers: { 'x-admin-pass': token } }).then(setStats).catch(() => {}) }, [token])
+  useEffect(() => { api('23_webku_8stats', { headers: { 'x-admin-pass': token } }).then(setStats).catch(() => {}) }, [token])
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Dashboard</h2>
@@ -94,17 +94,17 @@ function Dashboard({ token }) {
 
 function Inquiries({ token }) {
   const [list, setList] = useState([])
-  const load = () => api('admin/inquiries', { headers: { 'x-admin-pass': token } }).then(setList).catch(() => {})
+  const load = () => api('23_webku_8inquiries', { headers: { 'x-admin-pass': token } }).then(setList).catch(() => {})
   useEffect(() => { load() }, [token])
 
   const updateStatus = async (id, status) => {
-    await api(`admin/inquiries/${id}`, { method: 'PATCH', headers: { 'x-admin-pass': token }, body: JSON.stringify({ status }) })
+    await api(`23_webku_8inquiries/${id}`, { method: 'PATCH', headers: { 'x-admin-pass': token }, body: JSON.stringify({ status }) })
     toast.success('Status diperbarui')
     load()
   }
   const del = async (id) => {
     if (!confirm('Hapus inquiry ini?')) return
-    await api(`admin/inquiries/${id}`, { method: 'DELETE', headers: { 'x-admin-pass': token } })
+    await api(`23_webku_8inquiries/${id}`, { method: 'DELETE', headers: { 'x-admin-pass': token } })
     toast.success('Inquiry dihapus')
     load()
   }
@@ -164,7 +164,7 @@ function DemoManager({ token }) {
     e.preventDefault()
     const cat = cats.find(c => c.slug === form.categorySlug)
     try {
-      await api('admin/demos', { method: 'POST', headers: { 'x-admin-pass': token }, body: JSON.stringify({ ...form, category: cat?.name, price: parseInt(form.price), features: ['Responsive', 'SEO Friendly', 'Mobile First'] }) })
+      await api('23_webku_8demos', { method: 'POST', headers: { 'x-admin-pass': token }, body: JSON.stringify({ ...form, category: cat?.name, price: parseInt(form.price), features: ['Responsive', 'SEO Friendly', 'Mobile First'] }) })
       toast.success('Demo ditambahkan')
       setOpen(false); setForm({ name: '', categorySlug: '', description: '', price: 1499000, thumbnail: '', demoUrl: '' }); load()
     } catch (e) { toast.error(e.message) }
@@ -178,7 +178,7 @@ function DemoManager({ token }) {
 
   try {
     await api(
-      `admin/demos/${editing.id}`,
+      `23_webku_8demos/${editing.id}`,
       {
         method: 'PATCH',
         headers: {
@@ -215,7 +215,7 @@ function DemoManager({ token }) {
 }
   const del = async (id) => {
     if (!confirm('Hapus demo ini?')) return
-    await api(`admin/demos/${id}`, { method: 'DELETE', headers: { 'x-admin-pass': token } })
+    await api(`23_webku_8demos/${id}`, { method: 'DELETE', headers: { 'x-admin-pass': token } })
     toast.success('Dihapus'); load()
   }
   return (
@@ -337,7 +337,7 @@ function ArticleManager({ token }) {
   if (!confirm('Hapus artikel ini?')) return
 
   await api(
-    `admin/articles/${id}`,
+    `23_webku_8articles/${id}`,
     {
       method: 'DELETE',
       headers: {
@@ -354,7 +354,7 @@ function ArticleManager({ token }) {
   const save = async (e) => {
     e.preventDefault()
     try {
-      await api('admin/articles', { method: 'POST', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
+      await api('23_webku_8articles', { method: 'POST', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
       toast.success('Artikel ditambahkan'); setOpen(false); setForm({ title: '', category: 'Website', thumbnail: '', excerpt: '', content: '' }); load()
     } catch (e) { toast.error(e.message) }
   }
@@ -363,7 +363,7 @@ function ArticleManager({ token }) {
 
   try {
     await api(
-      `admin/articles/${editing.id}`,
+      `23_webku_8articles/${editing.id}`,
       {
         method: 'PATCH',
         headers: {
@@ -518,10 +518,10 @@ function PackagesManager({ token }) {
     e.preventDefault()
     try {
       if (editing) {
-        await api(`admin/packages/${editing.id}`, { method: 'PATCH', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
+        await api(`23_webku_8packages/${editing.id}`, { method: 'PATCH', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
         toast.success('Paket diperbarui')
       } else {
-        await api('admin/packages', { method: 'POST', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
+        await api('23_webku_8packages', { method: 'POST', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
         toast.success('Paket ditambahkan')
       }
       setOpen(false); resetForm(); load()
@@ -530,7 +530,7 @@ function PackagesManager({ token }) {
 
   const del = async (id) => {
     if (!confirm('Hapus paket ini?')) return
-    await api(`admin/packages/${id}`, { method: 'DELETE', headers: { 'x-admin-pass': token } })
+    await api(`23_webku_8packages/${id}`, { method: 'DELETE', headers: { 'x-admin-pass': token } })
     toast.success('Dihapus'); load()
   }
 
@@ -593,10 +593,10 @@ function ServicesManager({ token }) {
     e.preventDefault()
     try {
       if (editing) {
-        await api(`admin/services/${editing.id}`, { method: 'PATCH', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
+        await api(`23_webku_8services/${editing.id}`, { method: 'PATCH', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
         toast.success('Layanan diperbarui')
       } else {
-        await api('admin/services', { method: 'POST', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
+        await api('23_webku_8services', { method: 'POST', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
         toast.success('Layanan ditambahkan')
       }
       setOpen(false); setEditing(null); setForm({ name: '', desc: '', price: 299000, icon: 'Package' }); load()
@@ -604,7 +604,7 @@ function ServicesManager({ token }) {
   }
   const del = async (id) => {
     if (!confirm('Hapus layanan ini?')) return
-    await api(`admin/services/${id}`, { method: 'DELETE', headers: { 'x-admin-pass': token } })
+    await api(`23_webku_8services/${id}`, { method: 'DELETE', headers: { 'x-admin-pass': token } })
     toast.success('Dihapus'); load()
   }
   const iconOptions = ['Palette', 'Image', 'FileImage', 'FileText', 'BookOpen', 'Briefcase', 'Instagram', 'Package', 'CreditCard', 'Mail', 'MapPin']
@@ -633,10 +633,10 @@ function TestimonialsManager({ token }) {
     e.preventDefault()
     try {
       if (editing) {
-        await api(`admin/testimonials/${editing.id}`, { method: 'PATCH', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
+        await api(`23_webku_8testimonials/${editing.id}`, { method: 'PATCH', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
         toast.success('Testimoni diperbarui')
       } else {
-        await api('admin/testimonials', { method: 'POST', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
+        await api('23_webku_8testimonials', { method: 'POST', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
         toast.success('Testimoni ditambahkan')
       }
       setOpen(false); setEditing(null); setForm({ name: '', business: '', photo: '', content: '' }); load()
@@ -644,7 +644,7 @@ function TestimonialsManager({ token }) {
   }
   const del = async (id) => {
     if (!confirm('Hapus testimoni ini?')) return
-    await api(`admin/testimonials/${id}`, { method: 'DELETE', headers: { 'x-admin-pass': token } })
+    await api(`23_webku_8testimonials/${id}`, { method: 'DELETE', headers: { 'x-admin-pass': token } })
     toast.success('Dihapus'); load()
   }
   return (
