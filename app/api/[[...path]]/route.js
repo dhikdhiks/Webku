@@ -2,17 +2,22 @@ import { NextResponse } from 'next/server'
 import { MongoClient } from 'mongodb'
 import { v4 as uuidv4 } from 'uuid'
 
-const MONGO_URL = process.env.MONGO_URL
-const DB_NAME = process.env.DB_NAME && process.env.DB_NAME !== 'your_database_name' ? process.env.DB_NAME : 'webku'
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'webku2025'
+const MONGO_URL = process.env.MONGO_URL;
+const DB_NAME = process.env.DB_NAME && process.env.DB_NAME !== 'your_database_name' ? process.env.DB_NAME : 'webku';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'webku2025';
 
-let cachedClient = null
+let cachedClient = null;
 async function getDb() {
-  if (!cachedClient) {
-    cachedClient = new MongoClient(MONGO_URL)
-    await cachedClient.connect()
+  // Proteksi jika MONGO_URL kosong agar tidak crash startsWith
+  if (!MONGO_URL) {
+    throw new Error("ERROR: Variabel MONGO_URL tidak terbaca di server/Vercel!");
   }
-  return cachedClient.db(DB_NAME)
+
+  if (!cachedClient) {
+    cachedClient = new MongoClient(MONGO_URL);
+    await cachedClient.connect();
+  }
+  return cachedClient.db(DB_NAME);
 }
 
 // --- Seed data on first call ---
