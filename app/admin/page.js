@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { api, formatRupiah } from '@/lib/api'
-import {Rocket,Globe,FileText,MessageSquare,Users,LogOut,Trash2,Plus,ExternalLink,Pencil} from 'lucide-react'
+import { Rocket, Globe, FileText, MessageSquare, Users, LogOut, Trash2, Plus, ExternalLink, Pencil, Package, Layers, Star } from 'lucide-react'
 
 const PASS_KEY = 'webku_admin_pass'
 
@@ -504,6 +504,162 @@ function ArticleManager({ token }) {
     </div>
 )}
 
+function PackagesManager({ token }) {
+  const [list, setList] = useState([])
+  const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [form, setForm] = useState({ name: '', price: 1499000, popular: false, features: [] })
+  const [featuresInput, setFeaturesInput] = useState('')
+
+  const load = () => api('packages').then(setList)
+  useEffect(() => { load() }, [token])
+
+  const save = async (e) => {
+    e.preventDefault()
+    try {
+      if (editing) {
+        await api(`admin/packages/${editing.id}`, { method: 'PATCH', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
+        toast.success('Paket diperbarui')
+      } else {
+        await api('admin/packages', { method: 'POST', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
+        toast.success('Paket ditambahkan')
+      }
+      setOpen(false); resetForm(); load()
+    } catch (e) { toast.error(e.message) }
+  }
+
+  const del = async (id) => {
+    if (!confirm('Hapus paket ini?')) return
+    await api(`admin/packages/${id}`, { method: 'DELETE', headers: { 'x-admin-pass': token } })
+    toast.success('Dihapus'); load()
+  }
+
+  const resetForm = () => {
+    setEditing(null)
+    setForm({ name: '', price: 1499000, popular: false, features: [] })
+    setFeaturesInput('')
+  }
+
+  const handleEdit = (pkg) => {
+    setEditing(pkg)
+    setForm({ name: pkg.name, price: pkg.price, popular: pkg.popular, features: pkg.features })
+    setFeaturesInput(pkg.features.join(', '))
+    setOpen(true)
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Paket Harga ({list.length})</h2>
+        <Button onClick={() => { resetForm(); setOpen(!open) }}><Plus className="w-4 h-4 mr-1" />Tambah Paket</Button>
+      </div>
+      {open && (
+        <Card><CardContent className="p-5">
+          <form onSubmit={save} className="space-y-3">
+            <div><Label>Nama Paket</Label><Input required value={form.name} onChange={e => setForm({...form, name: e.target.value})} /></div>
+            <div><Label>Harga (Rp)</Label><Input type="number" value={form.price} onChange={e => setForm({...form, price: parseInt(e.target.value)})} /></div>
+            <div className="flex items-center gap-2"><Label>Populer?</Label><input type="checkbox" checked={form.popular} onChange={e => setForm({...form, popular: e.target.checked})} className="w-4 h-4" /></div>
+            <div><Label>Fitur (pisahkan dengan koma)</Label><Input value={featuresInput} onChange={e => { setFeaturesInput(e.target.value); setForm({...form, features: e.target.value.split(',').map(f => f.trim()) }) }} placeholder="Responsif, SEO Friendly, Support 24/7" /></div>
+            <Button type="submit" className="bg-primary">{editing ? 'Update' : 'Simpan'}</Button>
+          </form>
+        </CardContent></Card>
+      )}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {list.map(p => (
+          <Card key={p.id}>
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start">
+                <div><h3 className="font-semibold">{p.name}</h3><div className="text-primary font-bold">{formatRupiah(p.price)}</div>{p.popular && <Badge className="bg-yellow-500 mt-1">Populer</Badge>}</div>
+                <div className="flex gap-1"><Button size="icon" variant="ghost" onClick={() => handleEdit(p)}><Pencil className="w-4 h-4" /></Button><Button size="icon" variant="ghost" onClick={() => del(p.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button></div>
+              </div>
+              <ul className="text-xs text-muted-foreground mt-2 list-disc pl-4">{p.features.slice(0,3).map((f,i) => <li key={i}>{f}</li>)}</ul>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ServicesManager({ token }) {
+  const [list, setList] = useState([])
+  const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [form, setForm] = useState({ name: '', desc: '', price: 299000, icon: 'Package' })
+  const load = () => api('services').then(setList)
+  useEffect(() => { load() }, [token])
+
+  const save = async (e) => {
+    e.preventDefault()
+    try {
+      if (editing) {
+        await api(`admin/services/${editing.id}`, { method: 'PATCH', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
+        toast.success('Layanan diperbarui')
+      } else {
+        await api('admin/services', { method: 'POST', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
+        toast.success('Layanan ditambahkan')
+      }
+      setOpen(false); setEditing(null); setForm({ name: '', desc: '', price: 299000, icon: 'Package' }); load()
+    } catch (e) { toast.error(e.message) }
+  }
+  const del = async (id) => {
+    if (!confirm('Hapus layanan ini?')) return
+    await api(`admin/services/${id}`, { method: 'DELETE', headers: { 'x-admin-pass': token } })
+    toast.success('Dihapus'); load()
+  }
+  const iconOptions = ['Palette', 'Image', 'FileImage', 'FileText', 'BookOpen', 'Briefcase', 'Instagram', 'Package', 'CreditCard', 'Mail', 'MapPin']
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between"><h2 className="text-2xl font-bold">Layanan Lainnya ({list.length})</h2><Button onClick={() => { setEditing(null); setForm({ name: '', desc: '', price: 299000, icon: 'Package' }); setOpen(!open) }}><Plus className="w-4 h-4 mr-1" />Tambah Layanan</Button></div>
+      {open && <Card><CardContent><form onSubmit={save} className="space-y-3"><div><Label>Nama Layanan</Label><Input required value={form.name} onChange={e => setForm({...form, name: e.target.value})} /></div><div><Label>Deskripsi</Label><Input value={form.desc} onChange={e => setForm({...form, desc: e.target.value})} /></div><div><Label>Harga</Label><Input type="number" value={form.price} onChange={e => setForm({...form, price: parseInt(e.target.value)})} /></div><div><Label>Icon</Label><Select value={form.icon} onValueChange={v => setForm({...form, icon: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{iconOptions.map(ic => <SelectItem key={ic} value={ic}>{ic}</SelectItem>)}</SelectContent></Select></div><Button type="submit" className="bg-primary">{editing ? 'Update' : 'Simpan'}</Button></form></CardContent></Card>}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {list.map(s => (
+          <Card key={s.id}><CardContent className="p-4"><div className="flex justify-between"><div><h3 className="font-semibold">{s.name}</h3><p className="text-xs text-muted-foreground">{s.desc}</p><div className="text-primary font-bold mt-1">{formatRupiah(s.price)}</div></div><div className="flex gap-1"><Button size="icon" variant="ghost" onClick={() => { setEditing(s); setForm({ name: s.name, desc: s.desc, price: s.price, icon: s.icon }); setOpen(true) }}><Pencil className="w-4 h-4" /></Button><Button size="icon" variant="ghost" onClick={() => del(s.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button></div></div></CardContent></Card>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function TestimonialsManager({ token }) {
+  const [list, setList] = useState([])
+  const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [form, setForm] = useState({ name: '', business: '', photo: '', content: '' })
+  const load = () => api('testimonials').then(setList)
+  useEffect(() => { load() }, [token])
+
+  const save = async (e) => {
+    e.preventDefault()
+    try {
+      if (editing) {
+        await api(`admin/testimonials/${editing.id}`, { method: 'PATCH', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
+        toast.success('Testimoni diperbarui')
+      } else {
+        await api('admin/testimonials', { method: 'POST', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
+        toast.success('Testimoni ditambahkan')
+      }
+      setOpen(false); setEditing(null); setForm({ name: '', business: '', photo: '', content: '' }); load()
+    } catch (e) { toast.error(e.message) }
+  }
+  const del = async (id) => {
+    if (!confirm('Hapus testimoni ini?')) return
+    await api(`admin/testimonials/${id}`, { method: 'DELETE', headers: { 'x-admin-pass': token } })
+    toast.success('Dihapus'); load()
+  }
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between"><h2 className="text-2xl font-bold">Testimoni ({list.length})</h2><Button onClick={() => { setEditing(null); setForm({ name: '', business: '', photo: '', content: '' }); setOpen(!open) }}><Plus className="w-4 h-4 mr-1" />Tambah Testimoni</Button></div>
+      {open && <Card><CardContent><form onSubmit={save} className="space-y-3"><div><Label>Nama</Label><Input required value={form.name} onChange={e => setForm({...form, name: e.target.value})} /></div><div><Label>Bisnis</Label><Input value={form.business} onChange={e => setForm({...form, business: e.target.value})} /></div><div><Label>Foto URL</Label><Input value={form.photo} onChange={e => setForm({...form, photo: e.target.value})} placeholder="https://..." /></div><div><Label>Testimoni</Label><Textarea rows={3} value={form.content} onChange={e => setForm({...form, content: e.target.value})} /></div><Button type="submit" className="bg-primary">{editing ? 'Update' : 'Simpan'}</Button></form></CardContent></Card>}
+      <div className="grid md:grid-cols-2 gap-4">
+        {list.map(t => (
+          <Card key={t.id}><CardContent className="p-4"><div className="flex justify-between"><div><p className="italic text-sm">"{t.content.substring(0,100)}..."</p><div className="font-semibold mt-2">{t.name}</div><div className="text-xs text-muted-foreground">{t.business}</div></div><div className="flex gap-1"><Button size="icon" variant="ghost" onClick={() => { setEditing(t); setForm({ name: t.name, business: t.business, photo: t.photo, content: t.content }); setOpen(true) }}><Pencil className="w-4 h-4" /></Button><Button size="icon" variant="ghost" onClick={() => del(t.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button></div></div></CardContent></Card>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function AdminApp() {
 const [token, setToken] = useState(null)
 const [activeTab, setActiveTab] = useState('dashboard')
@@ -579,6 +735,16 @@ return ( <div className="min-h-screen bg-slate-50">
           Dashboard
         </button>
 
+        <button onClick={() => setActiveTab('packages')} className={`px-5 py-2.5 text-sm font-medium rounded-xl transition-all ${activeTab === 'packages' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'}`}>
+  Paket Harga
+</button>
+<button onClick={() => setActiveTab('services')} className={`px-5 py-2.5 text-sm font-medium rounded-xl transition-all ${activeTab === 'services' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'}`}>
+  Layanan
+</button>
+<button onClick={() => setActiveTab('testimonials')} className={`px-5 py-2.5 text-sm font-medium rounded-xl transition-all ${activeTab === 'testimonials' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'}`}>
+  Testimoni
+</button>
+
         <button
           onClick={() => setActiveTab('inquiries')}
           className={`px-5 py-2.5 text-sm font-medium rounded-xl transition-all ${
@@ -630,6 +796,9 @@ return ( <div className="min-h-screen bg-slate-50">
     {activeTab === 'articles' && (
       <ArticleManager token={token} />
     )}
+    {activeTab === 'packages' && <PackagesManager token={token} />}
+{activeTab === 'services' && <ServicesManager token={token} />}
+{activeTab === 'testimonials' && <TestimonialsManager token={token} />}
 
   </main>
 

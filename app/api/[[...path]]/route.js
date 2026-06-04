@@ -109,6 +109,25 @@ async function ensureSeed(db) {
   ]
   await db.collection('services').insertMany(services)
 
+  // Seed packages
+  const packagesData = [
+    { name: 'Landing Page', price: 499000, popular: false, features: ['1 halaman responsif', 'Form kontak', 'WhatsApp integration', 'SEO basic', 'Domain & Hosting 1 tahun', 'Pengerjaan 2-3 hari'] },
+    { name: 'Company Profile', price: 999000, popular: false, features: ['5 halaman', 'Profil & layanan', 'Galeri', 'Form kontak', 'SEO friendly', 'Domain & Hosting 1 tahun'] },
+    { name: 'Website UMKM', price: 1499000, popular: true, features: ['7 halaman', 'Katalog produk', 'WhatsApp order', 'Google Maps', 'SEO + Analytics', 'Domain & Hosting 1 tahun'] },
+    { name: 'Klinik Gigi', price: 1999000, popular: false, features: ['Booking jadwal', 'Profil dokter', 'Layanan & harga', 'Testimoni pasien', 'Blog edukasi', 'Domain & Hosting'] },
+    { name: 'Klinik Hewan', price: 1999000, popular: false, features: ['Booking konsultasi', 'Layanan grooming', 'Tim dokter hewan', 'Tips perawatan', 'Galeri', 'Domain & Hosting'] },
+    { name: 'Klub Bola/Futsal', price: 1999000, popular: false, features: ['Profil klub & pemain', 'Jadwal pertandingan', 'Hasil & klasemen', 'Galeri foto', 'News & blog', 'Domain & Hosting'] },
+    { name: 'Sekolah', price: 2499000, popular: false, features: ['PPDB Online', 'E-learning sederhana', 'Pengumuman', 'Profil guru', 'Galeri kegiatan', 'Domain & Hosting'] },
+    { name: 'Toko Online', price: 2999000, popular: true, features: ['Katalog unlimited', 'Keranjang & checkout', 'Multi-payment', 'Tracking pesanan', 'Dashboard admin', 'Domain & Hosting'] },
+    { name: 'Website Custom', price: 3999000, popular: false, features: ['Sesuai kebutuhan', 'Fitur custom', 'Konsultasi dedicated', 'Revisi unlimited', 'Support 6 bulan', 'Domain & Hosting'] },
+  ]
+  for (const p of packagesData) {
+    const exists = await db.collection('packages').findOne({ name: p.name })
+    if (!exists) {
+      await db.collection('packages').insertOne({ id: uuidv4(), ...p, createdAt: new Date() })
+    }
+  }
+
   const testimonials = [
     { id: uuidv4(), name: 'Ibu Rina', business: 'Pemilik Toko Batik Modern', photo: 'https://images.unsplash.com/photo-1580894732444-8ecded7900cd?w=200&q=80', content: 'Setelah pakai website dari Webku, omzet toko saya naik 3x lipat! Pesanan datang dari luar kota dan luar negeri.' },
     { id: uuidv4(), name: 'Pak Budi', business: 'Pemilik Bengkel Otomotif Pro', photo: 'https://images.pexels.com/photos/8422729/pexels-photo-8422729.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=300&w=300', content: 'Pelayanan Webku sangat cepat dan ramah. Website saya jadi dalam 5 hari, dan langsung ramai pengunjung.' },
@@ -170,6 +189,18 @@ async function handler(request, { params }) {
   const method = request.method
   const url = new URL(request.url)
 
+  // Handle preflight OPTIONS request
+// if (request.method === 'OPTIONS') {
+//   return new NextResponse(null, {
+//     status: 204,
+//     headers: {
+//       'Access-Control-Allow-Origin': '*',
+//       'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+//       'Access-Control-Allow-Headers': 'Content-Type, x-admin-pass',
+//     },
+//   })
+// }
+
   try {
     // ===== PUBLIC =====
     if (path === 'settings' && method === 'GET') {
@@ -200,6 +231,11 @@ async function handler(request, { params }) {
 
     if (path === 'services' && method === 'GET') {
       const items = await db.collection('services').find({}).toArray()
+      return j(items.map(({ _id, ...r }) => r))
+    }
+
+    if (path === 'packages' && method === 'GET') {
+      const items = await db.collection('packages').find({}).toArray()
       return j(items.map(({ _id, ...r }) => r))
     }
 
@@ -242,7 +278,6 @@ async function handler(request, { params }) {
       }
       if (!inq.name || !inq.whatsapp) return j({ error: 'Nama dan WhatsApp wajib diisi' }, 400)
       await db.collection('inquiries').insertOne(inq)
-      // increment visitor stat
       await db.collection('visitor_stats').insertOne({ id: uuidv4(), type: 'inquiry', at: new Date() })
       return j({ ok: true, id: inq.id })
     }
@@ -295,6 +330,7 @@ async function handler(request, { params }) {
         return j({ ok: true })
       }
 
+      // ===== ADMIN DEMOS =====
       if (path === 'admin/demos' && method === 'POST') {
         const body = await request.json()
         const doc = {
@@ -316,38 +352,32 @@ async function handler(request, { params }) {
         return j({ ok: true, id: doc.id })
       }
       if (path.startsWith('admin/demos/') && method === 'PATCH') {
-  const id = path.split('/')[2]
-  const body = await request.json()
-
-  await db.collection('website_demos').updateOne(
-    { id },
-    {
-      $set: {
-        name: body.name,
-        slug: (body.name || '')
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/^-|-$/g, ''),
-        thumbnail: body.thumbnail || '',
-        categorySlug: body.categorySlug,
-        category: body.category,
-        description: body.description || '',
-        price: parseInt(body.price) || 0,
-        demoUrl: body.demoUrl || '',
-        updatedAt: new Date(),
+        const id = path.split('/')[2]
+        const body = await request.json()
+        await db.collection('website_demos').updateOne(
+          { id },
+          { $set: {
+              name: body.name,
+              slug: (body.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+              thumbnail: body.thumbnail || '',
+              categorySlug: body.categorySlug,
+              category: body.category,
+              description: body.description || '',
+              price: parseInt(body.price) || 0,
+              demoUrl: body.demoUrl || '',
+              updatedAt: new Date(),
+            }
+          }
+        )
+        return j({ ok: true })
       }
-    }
-  )
-
-  return j({ ok: true })
-}
-
       if (path.startsWith('admin/demos/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('website_demos').deleteOne({ id })
         return j({ ok: true })
       }
-      //add article
+
+      // ===== ADMIN ARTICLES =====
       if (path === 'admin/articles' && method === 'POST') {
         const body = await request.json()
         const doc = {
@@ -363,45 +393,136 @@ async function handler(request, { params }) {
         await db.collection('articles').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-      //update article
       if (path.startsWith('admin/articles/') && method === 'PATCH') {
-  const id = path.split('/')[2]
-  const body = await request.json()
-
-  await db.collection('articles').updateOne(
-    { id },
-    {
-      $set: {
-        title: body.title,
-        slug: (body.title || '')
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/^-|-$/g, ''),
-        category: body.category || 'Website',
-        thumbnail: body.thumbnail || '',
-        excerpt: body.excerpt || '',
-        content: body.content || '',
-        updatedAt: new Date(),
+        const id = path.split('/')[2]
+        const body = await request.json()
+        await db.collection('articles').updateOne(
+          { id },
+          { $set: {
+              title: body.title,
+              slug: (body.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+              category: body.category || 'Website',
+              thumbnail: body.thumbnail || '',
+              excerpt: body.excerpt || '',
+              content: body.content || '',
+              updatedAt: new Date(),
+            }
+          }
+        )
+        return j({ ok: true })
       }
-    }
-  )
+      if (path.startsWith('admin/articles/') && method === 'DELETE') {
+        const id = path.split('/')[2]
+        await db.collection('articles').deleteOne({ id })
+        return j({ ok: true })
+      }
 
-  return j({ ok: true })
-}
-//delete article
-if (path.startsWith('admin/articles/') && method === 'DELETE') {
-  const id = path.split('/')[2]
+      // ===== ADMIN PACKAGES =====
+      if (path === 'admin/packages' && method === 'POST') {
+        const body = await request.json()
+        const doc = {
+          id: uuidv4(),
+          name: body.name,
+          price: parseInt(body.price) || 0,
+          popular: body.popular || false,
+          features: body.features || [],
+          createdAt: new Date(),
+        }
+        await db.collection('packages').insertOne(doc)
+        return j({ ok: true, id: doc.id })
+      }
+      if (path.startsWith('admin/packages/') && method === 'PATCH') {
+        const id = path.split('/')[2]
+        const body = await request.json()
+        await db.collection('packages').updateOne(
+          { id },
+          { $set: {
+              name: body.name,
+              price: parseInt(body.price),
+              popular: body.popular,
+              features: body.features,
+              updatedAt: new Date()
+            }
+          }
+        )
+        return j({ ok: true })
+      }
+      if (path.startsWith('admin/packages/') && method === 'DELETE') {
+        const id = path.split('/')[2]
+        await db.collection('packages').deleteOne({ id })
+        return j({ ok: true })
+      }
 
-  await db.collection('articles').deleteOne({ id })
+      // ===== ADMIN SERVICES =====
+      if (path === 'admin/services' && method === 'POST') {
+        const body = await request.json()
+        const doc = {
+          id: uuidv4(),
+          name: body.name,
+          desc: body.desc,
+          price: parseInt(body.price) || 0,
+          icon: body.icon || 'Package',
+          createdAt: new Date(),
+        }
+        await db.collection('services').insertOne(doc)
+        return j({ ok: true, id: doc.id })
+      }
+      if (path.startsWith('admin/services/') && method === 'PATCH') {
+        const id = path.split('/')[2]
+        const body = await request.json()
+        await db.collection('services').updateOne(
+          { id },
+          { $set: {
+              name: body.name,
+              desc: body.desc,
+              price: parseInt(body.price),
+              icon: body.icon,
+              updatedAt: new Date()
+            }
+          }
+        )
+        return j({ ok: true })
+      }
+      if (path.startsWith('admin/services/') && method === 'DELETE') {
+        const id = path.split('/')[2]
+        await db.collection('services').deleteOne({ id })
+        return j({ ok: true })
+      }
 
-  return j({ ok: true })
-}
-
+      // ===== ADMIN TESTIMONIALS =====
       if (path === 'admin/testimonials' && method === 'POST') {
         const body = await request.json()
-        const doc = { id: uuidv4(), name: body.name, business: body.business, photo: body.photo, content: body.content }
+        const doc = {
+          id: uuidv4(),
+          name: body.name,
+          business: body.business,
+          photo: body.photo,
+          content: body.content,
+          createdAt: new Date(),
+        }
         await db.collection('testimonials').insertOne(doc)
         return j({ ok: true, id: doc.id })
+      }
+      if (path.startsWith('admin/testimonials/') && method === 'PATCH') {
+        const id = path.split('/')[2]
+        const body = await request.json()
+        await db.collection('testimonials').updateOne(
+          { id },
+          { $set: {
+              name: body.name,
+              business: body.business,
+              photo: body.photo,
+              content: body.content,
+              updatedAt: new Date()
+            }
+          }
+        )
+        return j({ ok: true })
+      }
+      if (path.startsWith('admin/testimonials/') && method === 'DELETE') {
+        const id = path.split('/')[2]
+        await db.collection('testimonials').deleteOne({ id })
+        return j({ ok: true })
       }
     }
 

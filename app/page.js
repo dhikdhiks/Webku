@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { toast } from 'sonner'
@@ -24,18 +23,6 @@ const serviceIcons = {
   Palette, Image: ImageIcon, FileImage, FileText, BookOpen, Briefcase, Instagram, Package: PackageIcon,
   CreditCard, Mail, MapPin,
 }
-
-const packages = [
-  { name: 'Landing Page', price: 499000, popular: false, features: ['1 halaman responsif', 'Form kontak', 'WhatsApp integration', 'SEO basic', 'Domain & Hosting 1 tahun', 'Pengerjaan 2-3 hari'] },
-  { name: 'Company Profile', price: 999000, popular: false, features: ['5 halaman', 'Profil & layanan', 'Galeri', 'Form kontak', 'SEO friendly', 'Domain & Hosting 1 tahun'] },
-  { name: 'Website UMKM', price: 1499000, popular: true, features: ['7 halaman', 'Katalog produk', 'WhatsApp order', 'Google Maps', 'SEO + Analytics', 'Domain & Hosting 1 tahun'] },
-  { name: 'Klinik Gigi', price: 1999000, popular: false, features: ['Booking jadwal', 'Profil dokter', 'Layanan & harga', 'Testimoni pasien', 'Blog edukasi', 'Domain & Hosting'] },
-  { name: 'Klinik Hewan', price: 1999000, popular: false, features: ['Booking konsultasi', 'Layanan grooming', 'Tim dokter hewan', 'Tips perawatan', 'Galeri', 'Domain & Hosting'] },
-  { name: 'Klub Bola/Futsal', price: 1999000, popular: false, features: ['Profil klub & pemain', 'Jadwal pertandingan', 'Hasil & klasemen', 'Galeri foto', 'News & blog', 'Domain & Hosting'] },
-  { name: 'Sekolah', price: 2499000, popular: false, features: ['PPDB Online', 'E-learning sederhana', 'Pengumuman', 'Profil guru', 'Galeri kegiatan', 'Domain & Hosting'] },
-  { name: 'Toko Online', price: 2999000, popular: true, features: ['Katalog unlimited', 'Keranjang & checkout', 'Multi-payment', 'Tracking pesanan', 'Dashboard admin', 'Domain & Hosting'] },
-  { name: 'Website Custom', price: 3999000, popular: false, features: ['Sesuai kebutuhan', 'Fitur custom', 'Konsultasi dedicated', 'Revisi unlimited', 'Support 6 bulan', 'Domain & Hosting'] },
-]
 
 function Navbar({ onCTAClick, whatsapp }) {
   const [open, setOpen] = useState(false)
@@ -91,8 +78,8 @@ function Hero({ stats, onCTAClick, whatsapp }) {
       <div className="container mx-auto px-4 pt-16 pb-20 md:pt-24 md:pb-28 relative">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <Badge className="bg-primary/10 text-primary hover:bg-primary/20 rounded-full px-4 py-1.5 mb-6">
-              <Sparkles className="w-3.5 h-3.5 mr-1.5" /> Trusted by 1000+ UMKM Indonesia
+            <Badge className="bg-primary/10 text-primary hover:bg-primary/20 rounded-full px-6 py-2.5 mb-6 text-base">
+              <Sparkles className="w-4 h-4 mr-2" /> Trusted by 1000+ UMKM Indonesia
             </Badge>
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.1]">
               Website <span className="gradient-text">Profesional</span> untuk UMKM dan Bisnis Modern
@@ -208,7 +195,6 @@ function Steps() {
 function Catalog({ demos, categories, whatsapp, onPesan, onDetail }) {
   const [cat, setCat] = useState('all')
   const filtered = useMemo(() => cat === 'all' ? demos : demos.filter(d => d.categorySlug === cat), [demos, cat])
-  const shownCats = ['all', ...categories.slice(0, 10).map(c => c.slug)]
   return (
     <section id="katalog" className="py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
@@ -252,7 +238,7 @@ function Catalog({ demos, categories, whatsapp, onPesan, onDetail }) {
   )
 }
 
-function Packages({ onPesan }) {
+function Packages({ packages, onPesan }) {
   return (
     <section id="paket" className="py-20">
       <div className="container mx-auto px-4">
@@ -263,7 +249,7 @@ function Packages({ onPesan }) {
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           {packages.map((p, i) => (
-            <Card key={i} className={`relative overflow-visible ${p.popular ? 'border-primary shadow-2xl shadow-primary/20 scale-[1.02]' : 'border-border/60'}`}>
+            <Card key={p.id || i} className={`relative overflow-visible ${p.popular ? 'border-primary shadow-2xl shadow-primary/20 scale-[1.02]' : 'border-border/60'}`}>
               {p.popular && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground rounded-full px-3 py-1.5">
                   <Star className="w-3 h-3 mr-1 fill-current" /> Paling Populer
@@ -542,6 +528,7 @@ function WhatsAppFloating({ whatsapp }) {
 export default function App() {
   const [categories, setCategories] = useState([])
   const [demos, setDemos] = useState([])
+  const [packages, setPackages] = useState([])
   const [services, setServices] = useState([])
   const [testimonials, setTestimonials] = useState([])
   const [faqs, setFaqs] = useState([])
@@ -555,12 +542,23 @@ export default function App() {
   useEffect(() => {
     (async () => {
       try {
-        const [cats, dms, svc, tst, fq, art, st] = await Promise.all([
-          api('categories'), api('demos'), api('services'),
-          api('testimonials'), api('faqs'), api('articles'), api('settings'),
+        const [cats, dms, pkg, svc, tst, fq, art, st] = await Promise.all([
+          api('categories'),
+          api('demos'),
+          api('packages'),
+          api('services'),
+          api('testimonials'),
+          api('faqs'),
+          api('articles'),
+          api('settings'),
         ])
-        setCategories(cats); setDemos(dms); setServices(svc)
-        setTestimonials(tst); setFaqs(fq); setArticles(art)
+        setCategories(cats)
+        setDemos(dms)
+        setPackages(pkg)
+        setServices(svc)
+        setTestimonials(tst)
+        setFaqs(fq)
+        setArticles(art)
         if (st?.settings?.whatsapp) setWhatsapp(st.settings.whatsapp)
         if (st?.stats) setStats(st.stats)
         api('track', { method: 'POST' }).catch(() => {})
@@ -579,7 +577,7 @@ export default function App() {
         <Advantages />
         <Steps />
         <Catalog demos={demos} categories={categories} whatsapp={whatsapp} onPesan={openOrder} onDetail={setDetail} />
-        <Packages onPesan={openOrder} />
+        <Packages packages={packages} onPesan={openOrder} />
         <Services services={services} onPesan={openOrder} />
         <Testimonials list={testimonials} />
         <Articles list={articles} />
