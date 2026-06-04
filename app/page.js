@@ -69,7 +69,7 @@ function Navbar({ onCTAClick, whatsapp }) {
     </header>
   )
 }
-//gfgg
+
 function Hero({ stats, onCTAClick, whatsapp }) {
   return (
     <section id="beranda" className="relative overflow-hidden">
@@ -194,7 +194,12 @@ function Steps() {
 
 function Catalog({ demos, categories, whatsapp, onPesan, onDetail }) {
   const [cat, setCat] = useState('all')
-  const filtered = useMemo(() => cat === 'all' ? demos : demos.filter(d => d.categorySlug === cat), [demos, cat])
+  // Pastikan demos adalah array
+  const demosArray = Array.isArray(demos) ? demos : []
+  const filtered = useMemo(() => {
+    return cat === 'all' ? demosArray : demosArray.filter(d => d.categorySlug === cat)
+  }, [demosArray, cat])
+  
   return (
     <section id="katalog" className="py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
@@ -239,6 +244,7 @@ function Catalog({ demos, categories, whatsapp, onPesan, onDetail }) {
 }
 
 function Packages({ packages, onPesan }) {
+  const safePackages = Array.isArray(packages) ? packages : []
   return (
     <section id="paket" className="py-20">
       <div className="container mx-auto px-4">
@@ -248,7 +254,7 @@ function Packages({ packages, onPesan }) {
           <p className="mt-4 text-muted-foreground">Semua paket sudah termasuk domain & hosting 1 tahun.</p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {packages.map((p, i) => (
+          {safePackages.map((p, i) => (
             <Card key={p.id || i} className={`relative overflow-visible ${p.popular ? 'border-primary shadow-2xl shadow-primary/20 scale-[1.02]' : 'border-border/60'}`}>
               {p.popular && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground rounded-full px-3 py-1.5">
@@ -281,6 +287,7 @@ function Packages({ packages, onPesan }) {
 }
 
 function Services({ services, onPesan }) {
+  const safeServices = Array.isArray(services) ? services : []
   return (
     <section id="layanan" className="py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
@@ -290,7 +297,7 @@ function Services({ services, onPesan }) {
           <p className="mt-4 text-muted-foreground">Lengkapi branding bisnis Anda dengan layanan desain profesional.</p>
         </div>
         <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {services.map(s => {
+          {safeServices.map(s => {
             const Icon = serviceIcons[s.icon] || PackageIcon
             return (
               <Card key={s.id} className="hover:border-primary/50 hover:shadow-lg transition-all cursor-pointer" onClick={() => onPesan({ name: s.name, price: s.price })}>
@@ -312,6 +319,7 @@ function Services({ services, onPesan }) {
 }
 
 function Testimonials({ list }) {
+  const safeList = Array.isArray(list) ? list : []
   return (
     <section className="py-20">
       <div className="container mx-auto px-4">
@@ -320,7 +328,7 @@ function Testimonials({ list }) {
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Apa Kata Klien Webku?</h2>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {list.map(t => (
+          {safeList.map(t => (
             <Card key={t.id} className="border-border/60">
               <CardContent className="p-6">
                 <Quote className="w-7 h-7 text-primary/40 mb-3" />
@@ -342,6 +350,7 @@ function Testimonials({ list }) {
 }
 
 function Articles({ list }) {
+  const safeList = Array.isArray(list) ? list : []
   return (
     <section id="blog" className="py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
@@ -350,7 +359,7 @@ function Articles({ list }) {
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Artikel Terbaru</h2>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
-          {list.slice(0, 6).map(a => (
+          {safeList.slice(0, 6).map(a => (
             <Card key={a.id} className="overflow-hidden hover:shadow-xl hover:shadow-primary/10 transition-all border-border/60 group">
               <div className="aspect-video bg-muted overflow-hidden">
                 <img src={a.thumbnail} alt={a.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
@@ -369,6 +378,7 @@ function Articles({ list }) {
 }
 
 function FAQ({ list }) {
+  const safeList = Array.isArray(list) ? list : []
   return (
     <section id="faq" className="py-20">
       <div className="container mx-auto px-4 max-w-3xl">
@@ -377,7 +387,7 @@ function FAQ({ list }) {
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Pertanyaan yang Sering Diajukan</h2>
         </div>
         <Accordion type="single" collapsible className="w-full">
-          {list.map((f, i) => (
+          {safeList.map((f, i) => (
             <AccordionItem key={f.id} value={`item-${i}`}>
               <AccordionTrigger className="text-left">{f.question}</AccordionTrigger>
               <AccordionContent className="text-muted-foreground">{f.answer}</AccordionContent>
@@ -551,13 +561,13 @@ export default function App() {
           api('articles'),
           api('settings'),
         ])
-        setCategories(cats)
-        setDemos(dms)
-        setPackages(pkg)
-        setServices(svc)
-        setTestimonials(tst)
-        setFaqs(fq)
-        setArticles(art)
+        setCategories(cats || [])
+        setDemos(dms || [])
+        setPackages(pkg || [])
+        setServices(svc || [])
+        setTestimonials(tst || [])
+        setFaqs(fq || [])
+        setArticles(art || [])
         if (st?.settings?.whatsapp) setWhatsapp(st.settings.whatsapp)
         if (st?.stats) setStats(st.stats)
         api('track', { method: 'POST' }).catch(() => {})

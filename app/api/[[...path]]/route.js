@@ -190,7 +190,10 @@ async function ensureSeed(db) {
 }
 
 function j(data, status = 200) {
-  return NextResponse.json(data, { status })
+  const response = NextResponse.json(data, { status });
+  // Tambahkan cache header untuk meningkatkan kecepatan
+  response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+  return response;
 }
 
 async function handler(request, { params }) {
