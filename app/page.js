@@ -16,6 +16,7 @@ import {
   Palette, Image as ImageIcon, FileImage, FileText, Briefcase, Instagram, Package as PackageIcon,
   CreditCard, Menu as MenuIcon, X,
 } from 'lucide-react'
+import { Instagram } from 'lucide-react';
 
 const WA_DEFAULT = '6281227225178'
 

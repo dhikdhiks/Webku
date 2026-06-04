@@ -190,9 +190,7 @@ async function ensureSeed(db) {
 }
 
 function j(data, status = 200) {
-  const response = NextResponse.json(data, { status });
-  response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
-  return response;
+  return NextResponse.json(data, { status })
 }
 
 async function handler(request, { params }) {
