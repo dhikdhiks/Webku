@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner'
 import { api, formatRupiah } from '@/lib/api'
 import { Rocket, Globe, FileText, MessageSquare, Users, LogOut, Trash2, Plus, ExternalLink, Pencil, Package, Layers, Star } from 'lucide-react'
+import { Instagram } from 'lucide-react';
 
 const PASS_KEY = 'webku_admin_pass'
 
