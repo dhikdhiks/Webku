@@ -70,7 +70,7 @@ function Navbar({ onCTAClick, whatsapp }) {
     </header>
   )
 }
-
+//gfgg
 function Hero({ stats, onCTAClick, whatsapp }) {
   return (
     <section id="beranda" className="relative overflow-hidden">
