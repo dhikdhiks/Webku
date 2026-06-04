@@ -18,7 +18,7 @@ import {
   CreditCard, Menu as MenuIcon, X,
 } from 'lucide-react'
 // Add Instagram separately:
-import Instagram from 'lucide-react/dist/esm/icons/instagram'
+import { Instagram } from "lucide-react"
 
 const WA_DEFAULT = '6281227225178'
 
