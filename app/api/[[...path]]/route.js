@@ -7,15 +7,22 @@ const DB_NAME = process.env.DB_NAME && process.env.DB_NAME !== 'your_database_na
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'webku2025';
 
 let cachedClient = null;
+
 async function getDb() {
-  // Proteksi jika MONGO_URL kosong agar tidak crash startsWith
+  // Cek apakah MONGO_URL benar-benar ada nilainya
   if (!MONGO_URL) {
-    throw new Error("ERROR: Variabel MONGO_URL tidak terbaca di server/Vercel!");
+    console.error("CRITICAL: process.env.MONGO_URL tidak terbaca di server Vercel!");
+    throw new Error("Database configuration missing. Please check Vercel Environment Variables.");
   }
 
   if (!cachedClient) {
-    cachedClient = new MongoClient(MONGO_URL);
-    await cachedClient.connect();
+    try {
+      cachedClient = new MongoClient(MONGO_URL);
+      await cachedClient.connect();
+    } catch (dbError) {
+      console.error("Gagal koneksi ke MongoClient:", dbError);
+      throw dbError;
+    }
   }
   return cachedClient.db(DB_NAME);
 }
