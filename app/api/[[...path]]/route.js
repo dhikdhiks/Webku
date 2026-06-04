@@ -582,4 +582,4 @@ export const PUT = handler
 export const PATCH = handler
 export const DELETE = handler
 
-export const runtime = 'edge' // biar jalan di edge network Vercel (lebih cepat)
+export const runtime = 'nodejs'

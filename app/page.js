@@ -14,9 +14,11 @@ import { useEffect, useMemo, useState, useCallback } from 'react'
 import {
   Rocket, MessageCircle, Sparkles, Globe, Smartphone, Search, ShieldCheck, Zap, Headset,
   CheckCircle2, ArrowRight, Star, Phone, Mail, MapPin, Send, Quote, BookOpen,
-  Palette, Image as ImageIcon, FileImage, FileText, Briefcase, Instagram, Package as PackageIcon,
+  Palette, Image as ImageIcon, FileImage, FileText, Briefcase, Package as PackageIcon,
   CreditCard, Menu as MenuIcon, X,
 } from 'lucide-react'
+// Add Instagram separately:
+import Instagram from 'lucide-react/dist/esm/icons/instagram'
 
 const WA_DEFAULT = '6281227225178'
 
