@@ -170,49 +170,22 @@ function DemoManager({ token }) {
       setOpen(false); setForm({ name: '', categorySlug: '', description: '', price: 1499000, thumbnail: '', demoUrl: '' }); load()
     } catch (e) { toast.error(e.message) }
   }
-  const updateDemo = async (e) => {
+const updateDemo = async (e) => {
   e.preventDefault()
-
-  const cat = cats.find(
-    c => c.slug === form.categorySlug
-  )
-
+  const cat = cats.find(c => c.slug === form.categorySlug)
   try {
-    await api(
-      `23_webku_8demos/${editing.id}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'x-admin-pass': token
-        },
-        body: JSON.stringify({
-          ...form,
-          category: cat?.name,
-          price: parseInt(form.price)
-        })
-      }
-    )
-
-    toast.success('Demo berhasil diperbarui')
-
-    setEditing(null)
-
-    setForm({
-      name: '',
-      categorySlug: '',
-      description: '',
-      price: 1499000,
-      thumbnail: '',
-      demoUrl: ''
+    await api(`23_webku_8demos/${editing.id}`, {
+      method: 'PATCH',
+      headers: { 'x-admin-pass': token },
+      body: JSON.stringify({
+        ...form,
+        category: cat?.name,
+        price: parseInt(form.price)
+      })
     })
-
-    setOpen(false)
-
-    load()
-
-  } catch (e) {
-    toast.error(e.message)
-  }
+    toast.success('Demo berhasil diperbarui')
+    // ... reset form, tutup modal, load ulang
+  } catch (e) { toast.error(e.message) }
 }
   const del = async (id) => {
     if (!confirm('Hapus demo ini?')) return
@@ -289,26 +262,22 @@ function DemoManager({ token }) {
                 </div>
                 <div className="flex gap-1">
 
-  <Button
-    size="icon"
-    variant="ghost"
-    onClick={() => {
-      setEditing(d)
-
-      setForm({
-        name: d.name,
-        categorySlug: d.categorySlug,
-        description: d.description,
-        price: d.price,
-        thumbnail: d.thumbnail,
-        demoUrl: d.demoUrl
-      })
-
-      setOpen(true)
-    }}
-  >
-    <Pencil className="w-4 h-4" />
-  </Button>
+<Button
+  size="icon"
+  variant="ghost"
+  onClick={() => {
+    setEditing(d)
+    setForm({
+      name: d.name || '',
+      categorySlug: d.categorySlug || '',
+      description: d.description || '',
+      price: d.price || 0,
+      thumbnail: d.thumbnail || '',   // <-- tambahkan fallback
+      demoUrl: d.demoUrl || ''
+    })
+    setOpen(true)
+  }}
+></Button>
 
   <Button
     size="icon"

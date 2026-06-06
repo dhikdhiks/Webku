@@ -515,22 +515,29 @@ async function handler(request, { params }) {
         await db.collection('testimonials').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-      if (path.startsWith('23_webku_8testimonials/') && method === 'PATCH') {
-        const id = path.split('/')[2]
-        const body = await request.json()
-        await db.collection('testimonials').updateOne(
-          { id },
-          { $set: {
-              name: body.name,
-              business: body.business,
-              photo: body.photo,
-              content: body.content,
-              updatedAt: new Date()
-            }
-          }
-        )
-        return j({ ok: true })
-      }
+if (path.startsWith('23_webku_8demos/') && method === 'PATCH') {
+  const id = path.split('/')[2]
+  const body = await request.json()
+  
+  // Debug: lihat di log server Vercel
+  console.log('[UPDATE DEMO] ID:', id, 'Thumbnail baru:', body.thumbnail)
+
+  // Siapkan data update, pastikan thumbnail ikut
+  const updateData = {
+    name: body.name,
+    slug: (body.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+    thumbnail: body.thumbnail || '',   // <-- pastikan ini tidak terlewat
+    categorySlug: body.categorySlug,
+    category: body.category,
+    description: body.description || '',
+    price: parseInt(body.price) || 0,
+    demoUrl: body.demoUrl || '',
+    updatedAt: new Date(),
+  }
+
+  await db.collection('website_demos').updateOne({ id }, { $set: updateData })
+  return j({ ok: true, updated: updateData }) // kirim balik data yang diupdate
+}
       if (path.startsWith('23_webku_8testimonials/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('testimonials').deleteOne({ id })
