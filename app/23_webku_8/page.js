@@ -580,7 +580,52 @@ export default function AdminApp() {
     setToken(null)
   }
 
+  const tabs = [
+    { id: 'dashboard', label: 'Dashboard', component: Dashboard },
+    { id: 'inquiries', label: 'Inquiry', component: Inquiries },
+    { id: 'demos', label: 'Demo Website', component: DemoManager },
+    { id: 'articles', label: 'Artikel', component: ArticleManager },
+    { id: 'packages', label: 'Paket', component: PackagesManager },
+    { id: 'services', label: 'Layanan', component: ServicesManager },
+    { id: 'testimonials', label: 'Testimoni', component: TestimonialsManager },
+  ]
+
+  const ActiveComponent = tabs.find(t => t.id === activeTab)?.component || Dashboard
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur">
-        <div></div>
+        <div className="container mx-auto px-4 flex h-16 items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground">
+              <Rocket className="w-5 h-5" />
+            </div>
+            <span className="font-bold text-lg">Webku Admin</span>
+          </div>
+          <Button variant="ghost" onClick={logout} className="gap-2">
+            <LogOut className="w-4 h-4" /> Logout
+          </Button>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex flex-wrap gap-2 border-b mb-6">
+          {tabs.map(tab => (
+            <Button
+              key={tab.id}
+              variant={activeTab === tab.id ? 'default' : 'ghost'}
+              onClick={() => setActiveTab(tab.id)}
+              className="rounded-none border-b-2 border-transparent data-[active=true]:border-primary"
+              data-active={activeTab === tab.id}
+            >
+              {tab.label}
+            </Button>
+          ))}
+        </div>
+        <div className="py-4">
+          <ActiveComponent token={token} />
+        </div>
+      </div>
+    </div>
+  )
+}
