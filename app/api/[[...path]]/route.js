@@ -363,26 +363,31 @@ async function handler(request, { params }) {
         await db.collection('website_demos').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-      if (path.startsWith('23_webku_8demos/') && method === 'PATCH') {
+  if (path.startsWith('23_webku_8demos/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
-        await db.collection('website_demos').updateOne(
-          { id },
-          { $set: {
-              name: body.name,
-              slug: (body.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
-              thumbnail: body.thumbnail || '',
-              categorySlug: body.categorySlug,
-              category: body.category,
-              description: body.description || '',
-              price: parseInt(body.price) || 0,
-              demoUrl: body.demoUrl || '',
-              updatedAt: new Date(),
-            }
-          }
-        )
+        
+        // Build update object with all fields
+        const updateData = {
+          name: body.name,
+          slug: (body.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+          thumbnail: body.thumbnail || '',
+          categorySlug: body.categorySlug,
+          category: body.category,
+          description: body.description || '',
+          price: parseInt(body.price) || 0,
+          demoUrl: body.demoUrl || '',
+          updatedAt: new Date(),
+        }
+if (body.features) updateData.features = body.features
+        
+        const result = await db.collection('website_demos').updateOne({ id }, { $set: updateData })
+        if (result.matchedCount === 0) {
+          return j({ error: 'Demo not found' }, 404)
+        }
         return j({ ok: true })
       }
+      
       if (path.startsWith('23_webku_8demos/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('website_demos').deleteOne({ id })
@@ -390,7 +395,7 @@ async function handler(request, { params }) {
       }
 
       // ===== ADMIN ARTICLES =====
-      if (path === '23_webku_8articles' && method === 'POST') {
+     if (path === '23_webku_8articles' && method === 'POST') {
         const body = await request.json()
         const doc = {
           id: uuidv4(),
@@ -405,24 +410,27 @@ async function handler(request, { params }) {
         await db.collection('articles').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-      if (path.startsWith('23_webku_8articles/') && method === 'PATCH') {
+       if (path.startsWith('23_webku_8articles/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
-        await db.collection('articles').updateOne(
-          { id },
-          { $set: {
-              title: body.title,
-              slug: (body.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
-              category: body.category || 'Website',
-              thumbnail: body.thumbnail || '',
-              excerpt: body.excerpt || '',
-              content: body.content || '',
-              updatedAt: new Date(),
-            }
-          }
-        )
+        
+        const updateData = {
+          title: body.title,
+          slug: (body.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+          category: body.category || 'Website',
+          thumbnail: body.thumbnail || '',
+          excerpt: body.excerpt || '',
+          content: body.content || '',
+          updatedAt: new Date(),
+        }
+        
+        const result = await db.collection('articles').updateOne({ id }, { $set: updateData })
+        if (result.matchedCount === 0) {
+          return j({ error: 'Article not found' }, 404)
+        }
         return j({ ok: true })
       }
+      
       if (path.startsWith('23_webku_8articles/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('articles').deleteOne({ id })
@@ -443,23 +451,25 @@ async function handler(request, { params }) {
         await db.collection('packages').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-      if (path.startsWith('23_webku_8packages/') && method === 'PATCH') {
+    if (path.startsWith('23_webku_8packages/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
-        await db.collection('packages').updateOne(
-          { id },
-          { $set: {
-              name: body.name,
-              price: parseInt(body.price),
-              popular: body.popular,
-              features: body.features,
-              updatedAt: new Date()
-            }
-          }
-        )
+        
+        const updateData = {
+          name: body.name,
+          price: parseInt(body.price) || 0,
+          popular: body.popular === true,
+          features: body.features || [],
+          updatedAt: new Date()
+        }
+        
+        const result = await db.collection('packages').updateOne({ id }, { $set: updateData })
+        if (result.matchedCount === 0) {
+          return j({ error: 'Package not found' }, 404)
+        }
         return j({ ok: true })
       }
-      if (path.startsWith('23_webku_8packages/') && method === 'DELETE') {
+    if (path.startsWith('23_webku_8packages/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('packages').deleteOne({ id })
         return j({ ok: true })
@@ -479,27 +489,32 @@ async function handler(request, { params }) {
         await db.collection('services').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-      if (path.startsWith('23_webku_8services/') && method === 'PATCH') {
+
+ if (path.startsWith('23_webku_8services/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
-        await db.collection('services').updateOne(
-          { id },
-          { $set: {
-              name: body.name,
-              desc: body.desc,
-              price: parseInt(body.price),
-              icon: body.icon,
-              updatedAt: new Date()
-            }
-          }
-        )
+        
+        const updateData = {
+          name: body.name,
+          desc: body.desc,
+          price: parseInt(body.price) || 0,
+          icon: body.icon,
+          updatedAt: new Date()
+        }
+        
+        const result = await db.collection('services').updateOne({ id }, { $set: updateData })
+        if (result.matchedCount === 0) {
+          return j({ error: 'Service not found' }, 404)
+        }
         return j({ ok: true })
       }
-      if (path.startsWith('23_webku_8services/') && method === 'DELETE') {
+
+       if (path.startsWith('23_webku_8services/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('services').deleteOne({ id })
         return j({ ok: true })
       }
+
 
       // ===== ADMIN TESTIMONIALS =====
       if (path === '23_webku_8testimonials' && method === 'POST') {

@@ -158,73 +158,79 @@ function DemoManager({ token }) {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({ name: '', categorySlug: '', description: '', price: 1499000, thumbnail: '', demoUrl: '' })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  
   const load = () => api('demos').then(setList)
   useEffect(() => { load(); api('categories').then(setCats) }, [])
 
   const save = async (e) => {
     e.preventDefault()
+    if (isSubmitting) return
+    setIsSubmitting(true)
     const cat = cats.find(c => c.slug === form.categorySlug)
     try {
       await api('23_webku_8demos', { method: 'POST', headers: { 'x-admin-pass': token }, body: JSON.stringify({ ...form, category: cat?.name, price: parseInt(form.price), features: ['Responsive', 'SEO Friendly', 'Mobile First'] }) })
       toast.success('Demo ditambahkan')
       setOpen(false); setForm({ name: '', categorySlug: '', description: '', price: 1499000, thumbnail: '', demoUrl: '' }); load()
     } catch (e) { toast.error(e.message) }
+    finally { setIsSubmitting(false) }
   }
-const updateDemo = async (e) => {
-  e.preventDefault()
-  const cat = cats.find(c => c.slug === form.categorySlug)
-  try {
-    await api(`23_webku_8demos/${editing.id}`, {
-      method: 'PATCH',
-      headers: { 'x-admin-pass': token },
-      body: JSON.stringify({
-        ...form,
-        category: cat?.name,
-        price: parseInt(form.price)
+  
+  const updateDemo = async (e) => {
+    e.preventDefault()
+    if (isSubmitting || !editing) return
+    setIsSubmitting(true)
+    const cat = cats.find(c => c.slug === form.categorySlug)
+    const payload = {
+      name: form.name,
+      categorySlug: form.categorySlug,
+      description: form.description,
+      price: parseInt(form.price) || 0,
+      thumbnail: form.thumbnail || '',
+      demoUrl: form.demoUrl || '',
+      category: cat?.name || ''
+    }
+    try {
+      await api(`23_webku_8demos/${editing.id}`, {
+        method: 'PATCH',
+        headers: { 'x-admin-pass': token },
+        body: JSON.stringify(payload)
       })
-    })
-    toast.success('Demo berhasil diperbarui')
-    // ... reset form, tutup modal, load ulang
-  } catch (e) { toast.error(e.message) }
-}
+      toast.success('Demo berhasil diperbarui')
+      setEditing(null)
+      setForm({ name: '', categorySlug: '', description: '', price: 1499000, thumbnail: '', demoUrl: '' })
+      setOpen(false)
+      await load()
+    } catch (e) { 
+      toast.error(e.message || 'Gagal update demo')
+    } finally { 
+      setIsSubmitting(false) 
+    }
+  }
+  
   const del = async (id) => {
     if (!confirm('Hapus demo ini?')) return
     await api(`23_webku_8demos/${id}`, { method: 'DELETE', headers: { 'x-admin-pass': token } })
     toast.success('Dihapus'); load()
   }
+
+  const resetForm = () => {
+    setEditing(null)
+    setForm({ name: '', categorySlug: '', description: '', price: 1499000, thumbnail: '', demoUrl: '' })
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Demo Website ({list.length})</h2>
-        <Button
-  onClick={() => {
-    setEditing(null)
-
-    setForm({
-      name: '',
-      categorySlug: '',
-      description: '',
-      price: 1499000,
-      thumbnail: '',
-      demoUrl: ''
-    })
-
-    setOpen(!open)
-  }}
->
-  <Plus className="w-4 h-4 mr-1" />
-  Tambah Demo
-</Button>
+        <Button onClick={() => { resetForm(); setOpen(!open) }}>
+          <Plus className="w-4 h-4 mr-1" />
+          Tambah Demo
+        </Button>
       </div>
       {open && (
         <Card><CardContent className="p-5">
-          <form
-  onSubmit={
-    editing
-      ? updateDemo
-      : save
-  }
->
+          <form onSubmit={editing ? updateDemo : save}>
             <div className="grid md:grid-cols-2 gap-3">
               <div><Label>Nama</Label><Input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
               <div><Label>Kategori</Label>
@@ -240,12 +246,9 @@ const updateDemo = async (e) => {
             </div>
             <div><Label>Thumbnail URL</Label><Input required value={form.thumbnail} onChange={e => setForm({ ...form, thumbnail: e.target.value })} placeholder="https://..." /></div>
             <div><Label>Deskripsi</Label><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
-            <Button
-  type="submit"
-  className="bg-primary text-primary-foreground"
->
-  {editing ? 'Update Demo' : 'Simpan Demo'}
-</Button>
+            <Button type="submit" className="bg-primary text-primary-foreground" disabled={isSubmitting}>
+              {isSubmitting ? 'Menyimpan...' : (editing ? 'Update Demo' : 'Simpan Demo')}
+            </Button>
           </form>
         </CardContent></Card>
       )}
@@ -261,33 +264,28 @@ const updateDemo = async (e) => {
                   <div className="text-primary font-bold mt-1">{formatRupiah(d.price)}</div>
                 </div>
                 <div className="flex gap-1">
-
-<Button
-  size="icon"
-  variant="ghost"
-  onClick={() => {
-    setEditing(d)
-    setForm({
-      name: d.name || '',
-      categorySlug: d.categorySlug || '',
-      description: d.description || '',
-      price: d.price || 0,
-      thumbnail: d.thumbnail || '',   // <-- tambahkan fallback
-      demoUrl: d.demoUrl || ''
-    })
-    setOpen(true)
-  }}
-></Button>
-
-  <Button
-    size="icon"
-    variant="ghost"
-    onClick={() => del(d.id)}
-  >
-    <Trash2 className="w-4 h-4 text-destructive" />
-  </Button>
-
-</div>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => {
+                      setEditing(d)
+                      setForm({
+                        name: d.name || '',
+                        categorySlug: d.categorySlug || '',
+                        description: d.description || '',
+                        price: d.price || 0,
+                        thumbnail: d.thumbnail || '',
+                        demoUrl: d.demoUrl || ''
+                      })
+                      setOpen(true)
+                    }}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={() => del(d.id)}>
+                    <Trash2 className="w-4 h-4 text-destructive" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -303,96 +301,53 @@ function ArticleManager({ token }) {
   const [form, setForm] = useState({ title: '', category: 'Website', thumbnail: '', excerpt: '', content: '' })
   const load = () => api('articles').then(setList)
   const [editing, setEditing] = useState(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  
   const delArticle = async (id) => {
-  if (!confirm('Hapus artikel ini?')) return
-
-  await api(
-    `23_webku_8articles/${id}`,
-    {
-      method: 'DELETE',
-      headers: {
-        'x-admin-pass': token
-      }
-    }
-  )
-
-  toast.success('Artikel dihapus')
-
-  load()
-}
+    if (!confirm('Hapus artikel ini?')) return
+    await api(`23_webku_8articles/${id}`, { method: 'DELETE', headers: { 'x-admin-pass': token } })
+    toast.success('Artikel dihapus')
+    load()
+  }
   useEffect(() => { load() }, [])
+  
   const save = async (e) => {
     e.preventDefault()
+    if (isSubmitting) return
+    setIsSubmitting(true)
     try {
       await api('23_webku_8articles', { method: 'POST', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
       toast.success('Artikel ditambahkan'); setOpen(false); setForm({ title: '', category: 'Website', thumbnail: '', excerpt: '', content: '' }); load()
     } catch (e) { toast.error(e.message) }
+    finally { setIsSubmitting(false) }
   }
+  
   const updateArticle = async (e) => {
-  e.preventDefault()
-
-  try {
-    await api(
-      `23_webku_8articles/${editing.id}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'x-admin-pass': token
-        },
-        body: JSON.stringify(form)
-      }
-    )
-
-    toast.success('Artikel diperbarui')
-
-    setEditing(null)
-
-    setForm({
-      title: '',
-      category: 'Website',
-      thumbnail: '',
-      excerpt: '',
-      content: ''
-    })
-
-    setOpen(false)
-
-    load()
-
-  } catch (e) {
-    toast.error(e.message)
+    e.preventDefault()
+    if (isSubmitting) return
+    setIsSubmitting(true)
+    try {
+      await api(`23_webku_8articles/${editing.id}`, { method: 'PATCH', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
+      toast.success('Artikel diperbarui')
+      setEditing(null)
+      setForm({ title: '', category: 'Website', thumbnail: '', excerpt: '', content: '' })
+      setOpen(false)
+      load()
+    } catch (e) { toast.error(e.message) }
+    finally { setIsSubmitting(false) }
   }
-}
+  
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Artikel ({list.length})</h2>
- <Button
-  onClick={() => {
-    setEditing(null)
-
-    setForm({
-      title: '',
-      category: 'Website',
-      thumbnail: '',
-      excerpt: '',
-      content: ''
-    })
-
-    setOpen(!open)
-  }}
->
-  <Plus className="w-4 h-4 mr-1" />
-  Tambah Artikel
-</Button>
+        <Button onClick={() => { setEditing(null); setForm({ title: '', category: 'Website', thumbnail: '', excerpt: '', content: '' }); setOpen(!open) }}>
+          <Plus className="w-4 h-4 mr-1" />
+          Tambah Artikel
+        </Button>
       </div>
       {open && <Card><CardContent className="p-5">
-        <form
-  onSubmit={
-    editing
-      ? updateArticle
-      : save
-  }className="space-y-3">
+        <form onSubmit={editing ? updateArticle : save} className="space-y-3">
           <div><Label>Judul</Label><Input required value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} /></div>
           <div className="grid md:grid-cols-2 gap-3">
             <div><Label>Kategori</Label><Input value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} /></div>
@@ -400,79 +355,37 @@ function ArticleManager({ token }) {
           </div>
           <div><Label>Ringkasan</Label><Input value={form.excerpt} onChange={e => setForm({ ...form, excerpt: e.target.value })} /></div>
           <div><Label>Konten</Label><Textarea rows={8} value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} /></div>
-<Button
-  type="submit"
-  className="bg-primary text-primary-foreground"
->
-  {editing
-    ? 'Update Artikel'
-    : 'Simpan Artikel'}
-</Button>
+          <Button type="submit" className="bg-primary text-primary-foreground" disabled={isSubmitting}>
+            {isSubmitting ? 'Menyimpan...' : (editing ? 'Update Artikel' : 'Simpan Artikel')}
+          </Button>
         </form>
       </CardContent></Card>}
-
       <div className="grid md:grid-cols-2 gap-4">
-  {list.map(a => (
-    <Card key={a.id}>
-      <CardContent className="p-4">
-        <div className="flex justify-between items-start">
-
-          <div className="flex-1">
-            <Badge
-              variant="outline"
-              className="text-xs mb-2"
-            >
-              {a.category}
-            </Badge>
-
-            <h3 className="font-semibold">
-              {a.title}
-            </h3>
-
-            <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-              {a.excerpt}
-            </p>
-          </div>
-
-          <div className="flex gap-1">
-
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => {
-                setEditing(a)
-
-                setForm({
-                  title: a.title,
-                  category: a.category,
-                  thumbnail: a.thumbnail,
-                  excerpt: a.excerpt,
-                  content: a.content
-                })
-
-                setOpen(true)
-              }}
-            >
-              <Pencil className="w-4 h-4" />
-            </Button>
-
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => delArticle(a.id)}
-            >
-              <Trash2 className="w-4 h-4 text-destructive" />
-            </Button>
-
-          </div>
-
-        </div>
-      </CardContent>
-    </Card>
-  ))}
-</div>
+        {list.map(a => (
+          <Card key={a.id}>
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <Badge variant="outline" className="text-xs mb-2">{a.category}</Badge>
+                  <h3 className="font-semibold">{a.title}</h3>
+                  <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{a.excerpt}</p>
+                </div>
+                <div className="flex gap-1">
+                  <Button size="icon" variant="ghost" onClick={() => { setEditing(a); setForm({ title: a.title, category: a.category, thumbnail: a.thumbnail, excerpt: a.excerpt, content: a.content }); setOpen(true) }}>
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={() => delArticle(a.id)}>
+                    <Trash2 className="w-4 h-4 text-destructive" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
-)}
+  )
+}
 
 function PackagesManager({ token }) {
   const [list, setList] = useState([])
@@ -480,12 +393,15 @@ function PackagesManager({ token }) {
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({ name: '', price: 1499000, popular: false, features: [] })
   const [featuresInput, setFeaturesInput] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const load = () => api('packages').then(setList)
   useEffect(() => { load() }, [token])
 
   const save = async (e) => {
     e.preventDefault()
+    if (isSubmitting) return
+    setIsSubmitting(true)
     try {
       if (editing) {
         await api(`23_webku_8packages/${editing.id}`, { method: 'PATCH', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
@@ -496,6 +412,7 @@ function PackagesManager({ token }) {
       }
       setOpen(false); resetForm(); load()
     } catch (e) { toast.error(e.message) }
+    finally { setIsSubmitting(false) }
   }
 
   const del = async (id) => {
@@ -530,7 +447,7 @@ function PackagesManager({ token }) {
             <div><Label>Harga (Rp)</Label><Input type="number" value={form.price} onChange={e => setForm({...form, price: parseInt(e.target.value)})} /></div>
             <div className="flex items-center gap-2"><Label>Populer?</Label><input type="checkbox" checked={form.popular} onChange={e => setForm({...form, popular: e.target.checked})} className="w-4 h-4" /></div>
             <div><Label>Fitur (pisahkan dengan koma)</Label><Input value={featuresInput} onChange={e => { setFeaturesInput(e.target.value); setForm({...form, features: e.target.value.split(',').map(f => f.trim()) }) }} placeholder="Responsif, SEO Friendly, Support 24/7" /></div>
-            <Button type="submit" className="bg-primary">{editing ? 'Update' : 'Simpan'}</Button>
+            <Button type="submit" className="bg-primary" disabled={isSubmitting}>{isSubmitting ? 'Menyimpan...' : (editing ? 'Update' : 'Simpan')}</Button>
           </form>
         </CardContent></Card>
       )}
@@ -556,11 +473,15 @@ function ServicesManager({ token }) {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({ name: '', desc: '', price: 299000, icon: 'Package' })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  
   const load = () => api('services').then(setList)
   useEffect(() => { load() }, [token])
 
   const save = async (e) => {
     e.preventDefault()
+    if (isSubmitting) return
+    setIsSubmitting(true)
     try {
       if (editing) {
         await api(`23_webku_8services/${editing.id}`, { method: 'PATCH', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
@@ -571,17 +492,21 @@ function ServicesManager({ token }) {
       }
       setOpen(false); setEditing(null); setForm({ name: '', desc: '', price: 299000, icon: 'Package' }); load()
     } catch (e) { toast.error(e.message) }
+    finally { setIsSubmitting(false) }
   }
+  
   const del = async (id) => {
     if (!confirm('Hapus layanan ini?')) return
     await api(`23_webku_8services/${id}`, { method: 'DELETE', headers: { 'x-admin-pass': token } })
     toast.success('Dihapus'); load()
   }
+  
   const iconOptions = ['Palette', 'Image', 'FileImage', 'FileText', 'BookOpen', 'Briefcase', 'Instagram', 'Package', 'CreditCard', 'Mail', 'MapPin']
+  
   return (
     <div className="space-y-4">
       <div className="flex justify-between"><h2 className="text-2xl font-bold">Layanan Lainnya ({list.length})</h2><Button onClick={() => { setEditing(null); setForm({ name: '', desc: '', price: 299000, icon: 'Package' }); setOpen(!open) }}><Plus className="w-4 h-4 mr-1" />Tambah Layanan</Button></div>
-      {open && <Card><CardContent><form onSubmit={save} className="space-y-3"><div><Label>Nama Layanan</Label><Input required value={form.name} onChange={e => setForm({...form, name: e.target.value})} /></div><div><Label>Deskripsi</Label><Input value={form.desc} onChange={e => setForm({...form, desc: e.target.value})} /></div><div><Label>Harga</Label><Input type="number" value={form.price} onChange={e => setForm({...form, price: parseInt(e.target.value)})} /></div><div><Label>Icon</Label><Select value={form.icon} onValueChange={v => setForm({...form, icon: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{iconOptions.map(ic => <SelectItem key={ic} value={ic}>{ic}</SelectItem>)}</SelectContent></Select></div><Button type="submit" className="bg-primary">{editing ? 'Update' : 'Simpan'}</Button></form></CardContent></Card>}
+      {open && <Card><CardContent><form onSubmit={save} className="space-y-3"><div><Label>Nama Layanan</Label><Input required value={form.name} onChange={e => setForm({...form, name: e.target.value})} /></div><div><Label>Deskripsi</Label><Input value={form.desc} onChange={e => setForm({...form, desc: e.target.value})} /></div><div><Label>Harga</Label><Input type="number" value={form.price} onChange={e => setForm({...form, price: parseInt(e.target.value)})} /></div><div><Label>Icon</Label><Select value={form.icon} onValueChange={v => setForm({...form, icon: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{iconOptions.map(ic => <SelectItem key={ic} value={ic}>{ic}</SelectItem>)}</SelectContent></Select></div><Button type="submit" className="bg-primary" disabled={isSubmitting}>{isSubmitting ? 'Menyimpan...' : (editing ? 'Update' : 'Simpan')}</Button></form></CardContent></Card>}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {list.map(s => (
           <Card key={s.id}><CardContent className="p-4"><div className="flex justify-between"><div><h3 className="font-semibold">{s.name}</h3><p className="text-xs text-muted-foreground">{s.desc}</p><div className="text-primary font-bold mt-1">{formatRupiah(s.price)}</div></div><div className="flex gap-1"><Button size="icon" variant="ghost" onClick={() => { setEditing(s); setForm({ name: s.name, desc: s.desc, price: s.price, icon: s.icon }); setOpen(true) }}><Pencil className="w-4 h-4" /></Button><Button size="icon" variant="ghost" onClick={() => del(s.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button></div></div></CardContent></Card>
@@ -596,11 +521,15 @@ function TestimonialsManager({ token }) {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({ name: '', business: '', photo: '', content: '' })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  
   const load = () => api('testimonials').then(setList)
   useEffect(() => { load() }, [token])
 
   const save = async (e) => {
     e.preventDefault()
+    if (isSubmitting) return
+    setIsSubmitting(true)
     try {
       if (editing) {
         await api(`23_webku_8testimonials/${editing.id}`, { method: 'PATCH', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
@@ -611,16 +540,19 @@ function TestimonialsManager({ token }) {
       }
       setOpen(false); setEditing(null); setForm({ name: '', business: '', photo: '', content: '' }); load()
     } catch (e) { toast.error(e.message) }
+    finally { setIsSubmitting(false) }
   }
+  
   const del = async (id) => {
     if (!confirm('Hapus testimoni ini?')) return
     await api(`23_webku_8testimonials/${id}`, { method: 'DELETE', headers: { 'x-admin-pass': token } })
     toast.success('Dihapus'); load()
   }
+  
   return (
     <div className="space-y-4">
       <div className="flex justify-between"><h2 className="text-2xl font-bold">Testimoni ({list.length})</h2><Button onClick={() => { setEditing(null); setForm({ name: '', business: '', photo: '', content: '' }); setOpen(!open) }}><Plus className="w-4 h-4 mr-1" />Tambah Testimoni</Button></div>
-      {open && <Card><CardContent><form onSubmit={save} className="space-y-3"><div><Label>Nama</Label><Input required value={form.name} onChange={e => setForm({...form, name: e.target.value})} /></div><div><Label>Bisnis</Label><Input value={form.business} onChange={e => setForm({...form, business: e.target.value})} /></div><div><Label>Foto URL</Label><Input value={form.photo} onChange={e => setForm({...form, photo: e.target.value})} placeholder="https://..." /></div><div><Label>Testimoni</Label><Textarea rows={3} value={form.content} onChange={e => setForm({...form, content: e.target.value})} /></div><Button type="submit" className="bg-primary">{editing ? 'Update' : 'Simpan'}</Button></form></CardContent></Card>}
+      {open && <Card><CardContent><form onSubmit={save} className="space-y-3"><div><Label>Nama</Label><Input required value={form.name} onChange={e => setForm({...form, name: e.target.value})} /></div><div><Label>Bisnis</Label><Input value={form.business} onChange={e => setForm({...form, business: e.target.value})} /></div><div><Label>Foto URL</Label><Input value={form.photo} onChange={e => setForm({...form, photo: e.target.value})} placeholder="https://..." /></div><div><Label>Testimoni</Label><Textarea rows={3} value={form.content} onChange={e => setForm({...form, content: e.target.value})} /></div><Button type="submit" className="bg-primary" disabled={isSubmitting}>{isSubmitting ? 'Menyimpan...' : (editing ? 'Update' : 'Simpan')}</Button></form></CardContent></Card>}
       <div className="grid md:grid-cols-2 gap-4">
         {list.map(t => (
           <Card key={t.id}><CardContent className="p-4"><div className="flex justify-between"><div><p className="italic text-sm">"{t.content.substring(0,100)}..."</p><div className="font-semibold mt-2">{t.name}</div><div className="text-xs text-muted-foreground">{t.business}</div></div><div className="flex gap-1"><Button size="icon" variant="ghost" onClick={() => { setEditing(t); setForm({ name: t.name, business: t.business, photo: t.photo, content: t.content }); setOpen(true) }}><Pencil className="w-4 h-4" /></Button><Button size="icon" variant="ghost" onClick={() => del(t.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button></div></div></CardContent></Card>
@@ -631,147 +563,24 @@ function TestimonialsManager({ token }) {
 }
 
 export default function AdminApp() {
-const [token, setToken] = useState(null)
-const [activeTab, setActiveTab] = useState('dashboard')
+  const [token, setToken] = useState(null)
+  const [activeTab, setActiveTab] = useState('dashboard')
 
-useEffect(() => {
-const t =
-typeof window !== 'undefined' &&
-localStorage.getItem(PASS_KEY)
+  useEffect(() => {
+    const t = typeof window !== 'undefined' && localStorage.getItem(PASS_KEY)
+    if (t) setToken(t)
+  }, [])
 
-if (t) setToken(t)
+  if (!token) {
+    return <Login onLogin={setToken} />
+  }
 
-}, [])
+  const logout = () => {
+    localStorage.removeItem(PASS_KEY)
+    setToken(null)
+  }
 
-if (!token) {
-return <Login onLogin={setToken} />
-}
-
-const logout = () => {
-localStorage.removeItem(PASS_KEY)
-setToken(null)
-}
-
-return ( <div className="min-h-screen bg-slate-50">
-
-  <header className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur">
-    <div className="max-w-[1400px] mx-auto px-8 h-16 flex items-center justify-between">
-
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
-          <Rocket className="w-5 h-5 text-primary" />
-        </div>
-
-        <span className="font-bold text-xl text-primary">
-          Webku Admin
-        </span>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <a
-          href="/"
-          className="text-sm text-muted-foreground hover:text-foreground transition"
-        >
-          ← Lihat Website
-        </a>
-
-        <Button
-          variant="outline"
-          size="sm"
-          className="rounded-xl"
-          onClick={logout}
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          Logout
-        </Button>
-      </div>
-
-    </div>
-  </header>
-
-  <main className="max-w-[1400px] mx-auto px-8 py-8">
-
-    <div className="mb-8">
-      <div className="inline-flex items-center gap-1 rounded-2xl border bg-white p-1 shadow-sm">
-
-        <button
-          onClick={() => setActiveTab('dashboard')}
-          className={`px-5 py-2.5 text-sm font-medium rounded-xl transition-all ${
-            activeTab === 'dashboard'
-              ? 'bg-slate-900 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          Dashboard
-        </button>
-
-        <button onClick={() => setActiveTab('packages')} className={`px-5 py-2.5 text-sm font-medium rounded-xl transition-all ${activeTab === 'packages' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'}`}>
-  Paket Harga
-</button>
-<button onClick={() => setActiveTab('services')} className={`px-5 py-2.5 text-sm font-medium rounded-xl transition-all ${activeTab === 'services' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'}`}>
-  Layanan
-</button>
-<button onClick={() => setActiveTab('testimonials')} className={`px-5 py-2.5 text-sm font-medium rounded-xl transition-all ${activeTab === 'testimonials' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'}`}>
-  Testimoni
-</button>
-
-        <button
-          onClick={() => setActiveTab('inquiries')}
-          className={`px-5 py-2.5 text-sm font-medium rounded-xl transition-all ${
-            activeTab === 'inquiries'
-              ? 'bg-slate-900 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          Inquiry
-        </button>
-
-        <button
-          onClick={() => setActiveTab('demos')}
-          className={`px-5 py-2.5 text-sm font-medium rounded-xl transition-all ${
-            activeTab === 'demos'
-              ? 'bg-slate-900 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          Demo Website
-        </button>
-
-        <button
-          onClick={() => setActiveTab('articles')}
-          className={`px-5 py-2.5 text-sm font-medium rounded-xl transition-all ${
-            activeTab === 'articles'
-              ? 'bg-slate-900 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          Artikel
-        </button>
-
-      </div>
-    </div>
-
-    {activeTab === 'dashboard' && (
-      <Dashboard token={token} />
-    )}
-
-    {activeTab === 'inquiries' && (
-      <Inquiries token={token} />
-    )}
-
-    {activeTab === 'demos' && (
-      <DemoManager token={token} />
-    )}
-
-    {activeTab === 'articles' && (
-      <ArticleManager token={token} />
-    )}
-    {activeTab === 'packages' && <PackagesManager token={token} />}
-{activeTab === 'services' && <ServicesManager token={token} />}
-{activeTab === 'testimonials' && <TestimonialsManager token={token} />}
-
-  </main>
-
-</div>
-)
-}
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <header className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur">
+        <div></div>
