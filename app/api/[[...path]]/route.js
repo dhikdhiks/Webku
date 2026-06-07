@@ -7,24 +7,32 @@ const DB_NAME = process.env.DB_NAME && process.env.DB_NAME !== 'your_database_na
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'webku2025';
 
 let cachedClient = null;
+let cachedDb = null;
 
 async function getDb() {
-  // Cek apakah MONGO_URL benar-benar ada nilainya
   if (!MONGO_URL) {
-    console.error("CRITICAL: process.env.MONGO_URL tidak terbaca di server Vercel!");
+    console.error("CRITICAL: MONGO_URL tidak terbaca di server Vercel!");
     throw new Error("Database configuration missing. Please check Vercel Environment Variables.");
   }
 
+  if (cachedDb) return cachedDb;
+
   if (!cachedClient) {
     try {
-      cachedClient = new MongoClient(MONGO_URL);
+      cachedClient = new MongoClient(MONGO_URL, {
+        maxPoolSize: 10,
+        socketTimeoutMS: 30000,
+        connectTimeoutMS: 10000,
+      });
       await cachedClient.connect();
+      console.log("MongoDB connected successfully");
     } catch (dbError) {
       console.error("Gagal koneksi ke MongoClient:", dbError);
       throw dbError;
     }
   }
-  return cachedClient.db(DB_NAME);
+  cachedDb = cachedClient.db(DB_NAME);
+  return cachedDb;
 }
 
 // --- Seed data on first call ---
@@ -201,18 +209,6 @@ async function handler(request, { params }) {
   const method = request.method
   const url = new URL(request.url)
 
-  // Handle preflight OPTIONS request
-// if (request.method === 'OPTIONS') {
-//   return new NextResponse(null, {
-//     status: 204,
-//     headers: {
-//       'Access-Control-Allow-Origin': '*',
-//       'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
-//       'Access-Control-Allow-Headers': 'Content-Type, x-admin-pass',
-//     },
-//   })
-// }
-
   try {
     // ===== PUBLIC =====
     if (path === 'settings' && method === 'GET') {
@@ -363,11 +359,10 @@ async function handler(request, { params }) {
         await db.collection('website_demos').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-  if (path.startsWith('23_webku_8demos/') && method === 'PATCH') {
+
+      if (path.startsWith('23_webku_8demos/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
-        
-        // Build update object with all fields
         const updateData = {
           name: body.name,
           slug: (body.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
@@ -379,15 +374,12 @@ async function handler(request, { params }) {
           demoUrl: body.demoUrl || '',
           updatedAt: new Date(),
         }
-if (body.features) updateData.features = body.features
-        
+        if (body.features) updateData.features = body.features
         const result = await db.collection('website_demos').updateOne({ id }, { $set: updateData })
-        if (result.matchedCount === 0) {
-          return j({ error: 'Demo not found' }, 404)
-        }
+        if (result.matchedCount === 0) return j({ error: 'Demo not found' }, 404)
         return j({ ok: true })
       }
-      
+
       if (path.startsWith('23_webku_8demos/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('website_demos').deleteOne({ id })
@@ -395,7 +387,7 @@ if (body.features) updateData.features = body.features
       }
 
       // ===== ADMIN ARTICLES =====
-     if (path === '23_webku_8articles' && method === 'POST') {
+      if (path === '23_webku_8articles' && method === 'POST') {
         const body = await request.json()
         const doc = {
           id: uuidv4(),
@@ -410,10 +402,10 @@ if (body.features) updateData.features = body.features
         await db.collection('articles').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-       if (path.startsWith('23_webku_8articles/') && method === 'PATCH') {
+
+      if (path.startsWith('23_webku_8articles/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
-        
         const updateData = {
           title: body.title,
           slug: (body.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
@@ -423,14 +415,11 @@ if (body.features) updateData.features = body.features
           content: body.content || '',
           updatedAt: new Date(),
         }
-        
         const result = await db.collection('articles').updateOne({ id }, { $set: updateData })
-        if (result.matchedCount === 0) {
-          return j({ error: 'Article not found' }, 404)
-        }
+        if (result.matchedCount === 0) return j({ error: 'Article not found' }, 404)
         return j({ ok: true })
       }
-      
+
       if (path.startsWith('23_webku_8articles/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('articles').deleteOne({ id })
@@ -451,10 +440,10 @@ if (body.features) updateData.features = body.features
         await db.collection('packages').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-    if (path.startsWith('23_webku_8packages/') && method === 'PATCH') {
+
+      if (path.startsWith('23_webku_8packages/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
-        
         const updateData = {
           name: body.name,
           price: parseInt(body.price) || 0,
@@ -462,14 +451,12 @@ if (body.features) updateData.features = body.features
           features: body.features || [],
           updatedAt: new Date()
         }
-        
         const result = await db.collection('packages').updateOne({ id }, { $set: updateData })
-        if (result.matchedCount === 0) {
-          return j({ error: 'Package not found' }, 404)
-        }
+        if (result.matchedCount === 0) return j({ error: 'Package not found' }, 404)
         return j({ ok: true })
       }
-    if (path.startsWith('23_webku_8packages/') && method === 'DELETE') {
+
+      if (path.startsWith('23_webku_8packages/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('packages').deleteOne({ id })
         return j({ ok: true })
@@ -490,10 +477,9 @@ if (body.features) updateData.features = body.features
         return j({ ok: true, id: doc.id })
       }
 
- if (path.startsWith('23_webku_8services/') && method === 'PATCH') {
+      if (path.startsWith('23_webku_8services/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
-        
         const updateData = {
           name: body.name,
           desc: body.desc,
@@ -501,20 +487,16 @@ if (body.features) updateData.features = body.features
           icon: body.icon,
           updatedAt: new Date()
         }
-        
         const result = await db.collection('services').updateOne({ id }, { $set: updateData })
-        if (result.matchedCount === 0) {
-          return j({ error: 'Service not found' }, 404)
-        }
+        if (result.matchedCount === 0) return j({ error: 'Service not found' }, 404)
         return j({ ok: true })
       }
 
-       if (path.startsWith('23_webku_8services/') && method === 'DELETE') {
+      if (path.startsWith('23_webku_8services/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('services').deleteOne({ id })
         return j({ ok: true })
       }
-
 
       // ===== ADMIN TESTIMONIALS =====
       if (path === '23_webku_8testimonials' && method === 'POST') {
@@ -530,29 +512,22 @@ if (body.features) updateData.features = body.features
         await db.collection('testimonials').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-if (path.startsWith('23_webku_8demos/') && method === 'PATCH') {
-  const id = path.split('/')[2]
-  const body = await request.json()
-  
-  // Debug: lihat di log server Vercel
-  console.log('[UPDATE DEMO] ID:', id, 'Thumbnail baru:', body.thumbnail)
 
-  // Siapkan data update, pastikan thumbnail ikut
-  const updateData = {
-    name: body.name,
-    slug: (body.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
-    thumbnail: body.thumbnail || '',   // <-- pastikan ini tidak terlewat
-    categorySlug: body.categorySlug,
-    category: body.category,
-    description: body.description || '',
-    price: parseInt(body.price) || 0,
-    demoUrl: body.demoUrl || '',
-    updatedAt: new Date(),
-  }
+      if (path.startsWith('23_webku_8testimonials/') && method === 'PATCH') {
+        const id = path.split('/')[2]
+        const body = await request.json()
+        const updateData = {
+          name: body.name,
+          business: body.business,
+          photo: body.photo,
+          content: body.content,
+          updatedAt: new Date()
+        }
+        const result = await db.collection('testimonials').updateOne({ id }, { $set: updateData })
+        if (result.matchedCount === 0) return j({ error: 'Testimonial not found' }, 404)
+        return j({ ok: true })
+      }
 
-  await db.collection('website_demos').updateOne({ id }, { $set: updateData })
-  return j({ ok: true, updated: updateData }) // kirim balik data yang diupdate
-}
       if (path.startsWith('23_webku_8testimonials/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('testimonials').deleteOne({ id })
