@@ -315,13 +315,13 @@ async function handler(request, { params }) {
         return j(items.map(({ _id, ...r }) => r))
       }
       if (path.startsWith('23_webku_8inquiries/') && method === 'PATCH') {
-        const id = path.split('/')[2]
+        const id = path.split('/')[1]
         const body = await request.json()
         await db.collection('inquiries').updateOne({ id }, { $set: { status: body.status } })
         return j({ ok: true })
       }
       if (path.startsWith('23_webku_8inquiries/') && method === 'DELETE') {
-        const id = path.split('/')[2]
+        const id = path.split('/')[1]
         await db.collection('inquiries').deleteOne({ id })
         return j({ ok: true })
       }
@@ -348,7 +348,7 @@ async function handler(request, { params }) {
         return j({ ok: true, id: doc.id })
       }
       if (path.startsWith('23_webku_8demos/') && method === 'PATCH') {
-        const id = path.split('/')[2]
+        const id = path.split('/')[1]
         const body = await request.json()
         // Periksa apakah demo dengan id tersebut ada
         const existing = await db.collection('website_demos').findOne({ id })
@@ -372,7 +372,7 @@ async function handler(request, { params }) {
         return j({ ok: true })
       }
       if (path.startsWith('23_webku_8demos/') && method === 'DELETE') {
-        const id = path.split('/')[2]
+        const id = path.split('/')[1]
         await db.collection('website_demos').deleteOne({ id })
         return j({ ok: true })
       }
@@ -394,7 +394,7 @@ async function handler(request, { params }) {
         return j({ ok: true, id: doc.id })
       }
       if (path.startsWith('23_webku_8articles/') && method === 'PATCH') {
-        const id = path.split('/')[2]
+        const id = path.split('/')[1]
         const body = await request.json()
         const existing = await db.collection('articles').findOne({ id })
         if (!existing) return j({ error: 'Article not found' }, 404)
@@ -402,7 +402,7 @@ async function handler(request, { params }) {
         return j({ ok: true })
       }
       if (path.startsWith('23_webku_8articles/') && method === 'DELETE') {
-        const id = path.split('/')[2]
+        const id = path.split('/')[1]
         await db.collection('articles').deleteOne({ id })
         return j({ ok: true })
       }
@@ -422,7 +422,7 @@ async function handler(request, { params }) {
         return j({ ok: true, id: doc.id })
       }
       if (path.startsWith('23_webku_8packages/') && method === 'PATCH') {
-        const id = path.split('/')[2]
+        const id = path.split('/')[1]
         const body = await request.json()
         const existing = await db.collection('packages').findOne({ id })
         if (!existing) return j({ error: 'Package not found' }, 404)
@@ -430,7 +430,7 @@ async function handler(request, { params }) {
         return j({ ok: true })
       }
       if (path.startsWith('23_webku_8packages/') && method === 'DELETE') {
-        const id = path.split('/')[2]
+        const id = path.split('/')[1]
         await db.collection('packages').deleteOne({ id })
         return j({ ok: true })
       }
@@ -450,7 +450,7 @@ async function handler(request, { params }) {
         return j({ ok: true, id: doc.id })
       }
       if (path.startsWith('23_webku_8services/') && method === 'PATCH') {
-        const id = path.split('/')[2]
+        const id = path.split('/')[1]
         const body = await request.json()
         const existing = await db.collection('services').findOne({ id })
         if (!existing) return j({ error: 'Service not found' }, 404)
@@ -458,7 +458,7 @@ async function handler(request, { params }) {
         return j({ ok: true })
       }
       if (path.startsWith('23_webku_8services/') && method === 'DELETE') {
-        const id = path.split('/')[2]
+        const id = path.split('/')[1]
         await db.collection('services').deleteOne({ id })
         return j({ ok: true })
       }
@@ -478,7 +478,7 @@ async function handler(request, { params }) {
         return j({ ok: true, id: doc.id })
       }
       if (path.startsWith('23_webku_8testimonials/') && method === 'PATCH') {
-        const id = path.split('/')[2]
+        const id = path.split('/')[1]
         const body = await request.json()
         const existing = await db.collection('testimonials').findOne({ id })
         if (!existing) return j({ error: 'Testimonial not found' }, 404)
@@ -486,7 +486,7 @@ async function handler(request, { params }) {
         return j({ ok: true })
       }
       if (path.startsWith('23_webku_8testimonials/') && method === 'DELETE') {
-        const id = path.split('/')[2]
+        const id = path.split('/')[1]
         await db.collection('testimonials').deleteOne({ id })
         return j({ ok: true })
       }
