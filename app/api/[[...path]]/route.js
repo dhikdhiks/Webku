@@ -11,7 +11,7 @@ let cachedDb = null;
 
 async function getDb() {
   if (!MONGO_URL) {
-    console.error("CRITICAL: MONGO_URL tidak terbaca di server Vercel!");
+    console.error("CRITICAL: MONGO_URL tidak terbaca di Vercel!");
     throw new Error("Database configuration missing. Please check Vercel Environment Variables.");
   }
 
@@ -97,7 +97,7 @@ async function ensureSeed(db) {
     { name: 'PT Sukses Mandiri', categorySlug: 'company-profile', desc: 'Company profile profesional dengan layanan dan portfolio.', price: 999000, thumb: thumbs[0], demoUrl: 'https://demo.webku.id/company' },
   ]
 
-  const demoDocs = demos.map((d, i) => ({
+  const demoDocs = demos.map((d) => ({
     id: uuidv4(),
     name: d.name,
     slug: d.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
@@ -129,7 +129,6 @@ async function ensureSeed(db) {
   ]
   await db.collection('services').insertMany(services)
 
-  // Seed packages
   const packagesData = [
     { name: 'Landing Page', price: 499000, popular: false, features: ['1 halaman responsif', 'Form kontak', 'WhatsApp integration', 'SEO basic', 'Domain & Hosting 1 tahun', 'Pengerjaan 2-3 hari'] },
     { name: 'Company Profile', price: 999000, popular: false, features: ['5 halaman', 'Profil & layanan', 'Galeri', 'Form kontak', 'SEO friendly', 'Domain & Hosting 1 tahun'] },
@@ -210,25 +209,22 @@ async function handler(request, { params }) {
   const url = new URL(request.url)
 
   try {
-    // ===== PUBLIC =====
+    // ===== PUBLIC API =====
     if (path === 'settings' && method === 'GET') {
       const s = await db.collection('settings').findOne({ key: 'seeded' })
       const stats = await db.collection('settings').findOne({ key: 'stats' })
       return j({ settings: s, stats })
     }
-
     if (path === 'categories' && method === 'GET') {
       const items = await db.collection('website_categories').find({}).toArray()
       return j(items.map(({ _id, ...r }) => r))
     }
-
     if (path === 'demos' && method === 'GET') {
       const cat = url.searchParams.get('category')
       const q = cat && cat !== 'all' ? { categorySlug: cat } : {}
       const items = await db.collection('website_demos').find(q).sort({ createdAt: -1 }).toArray()
       return j(items.map(({ _id, ...r }) => r))
     }
-
     if (path.startsWith('demos/') && method === 'GET') {
       const slug = path.split('/')[1]
       const item = await db.collection('website_demos').findOne({ slug })
@@ -236,32 +232,26 @@ async function handler(request, { params }) {
       const { _id, ...r } = item
       return j(r)
     }
-
     if (path === 'services' && method === 'GET') {
       const items = await db.collection('services').find({}).toArray()
       return j(items.map(({ _id, ...r }) => r))
     }
-
     if (path === 'packages' && method === 'GET') {
       const items = await db.collection('packages').find({}).toArray()
       return j(items.map(({ _id, ...r }) => r))
     }
-
     if (path === 'testimonials' && method === 'GET') {
       const items = await db.collection('testimonials').find({}).toArray()
       return j(items.map(({ _id, ...r }) => r))
     }
-
     if (path === 'faqs' && method === 'GET') {
       const items = await db.collection('faq').find({}).toArray()
       return j(items.map(({ _id, ...r }) => r))
     }
-
     if (path === 'articles' && method === 'GET') {
       const items = await db.collection('articles').find({}).sort({ createdAt: -1 }).toArray()
       return j(items.map(({ _id, ...r }) => r))
     }
-
     if (path.startsWith('articles/') && method === 'GET') {
       const slug = path.split('/')[1]
       const item = await db.collection('articles').findOne({ slug })
@@ -269,7 +259,6 @@ async function handler(request, { params }) {
       const { _id, ...r } = item
       return j(r)
     }
-
     if (path === 'inquiries' && method === 'POST') {
       const body = await request.json()
       const inq = {
@@ -289,13 +278,12 @@ async function handler(request, { params }) {
       await db.collection('visitor_stats').insertOne({ id: uuidv4(), type: 'inquiry', at: new Date() })
       return j({ ok: true, id: inq.id })
     }
-
     if (path === 'track' && method === 'POST') {
       await db.collection('visitor_stats').insertOne({ id: uuidv4(), type: 'visit', at: new Date() })
       return j({ ok: true })
     }
 
-    // ===== ADMIN =====
+    // ===== ADMIN API =====
     const authHeader = request.headers.get('x-admin-pass') || ''
     const isAdmin = authHeader === ADMIN_PASSWORD
 
@@ -308,6 +296,7 @@ async function handler(request, { params }) {
     if (path.startsWith('23_webku_8')) {
       if (!isAdmin) return j({ error: 'Unauthorized' }, 401)
 
+      // Stats
       if (path === '23_webku_8stats' && method === 'GET') {
         const [demos, articles, inquiries, services, visits] = await Promise.all([
           db.collection('website_demos').countDocuments(),
@@ -320,25 +309,24 @@ async function handler(request, { params }) {
         return j({ demos, articles, inquiries, services, visits, newInquiries: newInq })
       }
 
+      // Inquiries
       if (path === '23_webku_8inquiries' && method === 'GET') {
         const items = await db.collection('inquiries').find({}).sort({ createdAt: -1 }).toArray()
         return j(items.map(({ _id, ...r }) => r))
       }
-
       if (path.startsWith('23_webku_8inquiries/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
         await db.collection('inquiries').updateOne({ id }, { $set: { status: body.status } })
         return j({ ok: true })
       }
-
       if (path.startsWith('23_webku_8inquiries/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('inquiries').deleteOne({ id })
         return j({ ok: true })
       }
 
-      // ===== ADMIN DEMOS =====
+      // ==================== DEMOS (HANYA SATU PATCH) ====================
       if (path === '23_webku_8demos' && method === 'POST') {
         const body = await request.json()
         const doc = {
@@ -359,10 +347,15 @@ async function handler(request, { params }) {
         await db.collection('website_demos').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-
       if (path.startsWith('23_webku_8demos/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
+        // Periksa apakah demo dengan id tersebut ada
+        const existing = await db.collection('website_demos').findOne({ id })
+        if (!existing) {
+          console.error(`Demo not found with id: ${id}`)
+          return j({ error: `Demo not found with id: ${id}` }, 404)
+        }
         const updateData = {
           name: body.name,
           slug: (body.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
@@ -375,18 +368,16 @@ async function handler(request, { params }) {
           updatedAt: new Date(),
         }
         if (body.features) updateData.features = body.features
-        const result = await db.collection('website_demos').updateOne({ id }, { $set: updateData })
-        if (result.matchedCount === 0) return j({ error: 'Demo not found' }, 404)
+        await db.collection('website_demos').updateOne({ id }, { $set: updateData })
         return j({ ok: true })
       }
-
       if (path.startsWith('23_webku_8demos/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('website_demos').deleteOne({ id })
         return j({ ok: true })
       }
 
-      // ===== ADMIN ARTICLES =====
+      // ==================== ARTICLES ====================
       if (path === '23_webku_8articles' && method === 'POST') {
         const body = await request.json()
         const doc = {
@@ -402,31 +393,21 @@ async function handler(request, { params }) {
         await db.collection('articles').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-
       if (path.startsWith('23_webku_8articles/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
-        const updateData = {
-          title: body.title,
-          slug: (body.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
-          category: body.category || 'Website',
-          thumbnail: body.thumbnail || '',
-          excerpt: body.excerpt || '',
-          content: body.content || '',
-          updatedAt: new Date(),
-        }
-        const result = await db.collection('articles').updateOne({ id }, { $set: updateData })
-        if (result.matchedCount === 0) return j({ error: 'Article not found' }, 404)
+        const existing = await db.collection('articles').findOne({ id })
+        if (!existing) return j({ error: 'Article not found' }, 404)
+        await db.collection('articles').updateOne({ id }, { $set: { ...body, updatedAt: new Date() } })
         return j({ ok: true })
       }
-
       if (path.startsWith('23_webku_8articles/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('articles').deleteOne({ id })
         return j({ ok: true })
       }
 
-      // ===== ADMIN PACKAGES =====
+      // ==================== PACKAGES ====================
       if (path === '23_webku_8packages' && method === 'POST') {
         const body = await request.json()
         const doc = {
@@ -440,29 +421,21 @@ async function handler(request, { params }) {
         await db.collection('packages').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-
       if (path.startsWith('23_webku_8packages/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
-        const updateData = {
-          name: body.name,
-          price: parseInt(body.price) || 0,
-          popular: body.popular === true,
-          features: body.features || [],
-          updatedAt: new Date()
-        }
-        const result = await db.collection('packages').updateOne({ id }, { $set: updateData })
-        if (result.matchedCount === 0) return j({ error: 'Package not found' }, 404)
+        const existing = await db.collection('packages').findOne({ id })
+        if (!existing) return j({ error: 'Package not found' }, 404)
+        await db.collection('packages').updateOne({ id }, { $set: { ...body, updatedAt: new Date() } })
         return j({ ok: true })
       }
-
       if (path.startsWith('23_webku_8packages/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('packages').deleteOne({ id })
         return j({ ok: true })
       }
 
-      // ===== ADMIN SERVICES =====
+      // ==================== SERVICES ====================
       if (path === '23_webku_8services' && method === 'POST') {
         const body = await request.json()
         const doc = {
@@ -476,29 +449,21 @@ async function handler(request, { params }) {
         await db.collection('services').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-
       if (path.startsWith('23_webku_8services/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
-        const updateData = {
-          name: body.name,
-          desc: body.desc,
-          price: parseInt(body.price) || 0,
-          icon: body.icon,
-          updatedAt: new Date()
-        }
-        const result = await db.collection('services').updateOne({ id }, { $set: updateData })
-        if (result.matchedCount === 0) return j({ error: 'Service not found' }, 404)
+        const existing = await db.collection('services').findOne({ id })
+        if (!existing) return j({ error: 'Service not found' }, 404)
+        await db.collection('services').updateOne({ id }, { $set: { ...body, updatedAt: new Date() } })
         return j({ ok: true })
       }
-
       if (path.startsWith('23_webku_8services/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('services').deleteOne({ id })
         return j({ ok: true })
       }
 
-      // ===== ADMIN TESTIMONIALS =====
+      // ==================== TESTIMONIALS (DENGAN PATCH) ====================
       if (path === '23_webku_8testimonials' && method === 'POST') {
         const body = await request.json()
         const doc = {
@@ -512,22 +477,14 @@ async function handler(request, { params }) {
         await db.collection('testimonials').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-
       if (path.startsWith('23_webku_8testimonials/') && method === 'PATCH') {
         const id = path.split('/')[2]
         const body = await request.json()
-        const updateData = {
-          name: body.name,
-          business: body.business,
-          photo: body.photo,
-          content: body.content,
-          updatedAt: new Date()
-        }
-        const result = await db.collection('testimonials').updateOne({ id }, { $set: updateData })
-        if (result.matchedCount === 0) return j({ error: 'Testimonial not found' }, 404)
+        const existing = await db.collection('testimonials').findOne({ id })
+        if (!existing) return j({ error: 'Testimonial not found' }, 404)
+        await db.collection('testimonials').updateOne({ id }, { $set: { ...body, updatedAt: new Date() } })
         return j({ ok: true })
       }
-
       if (path.startsWith('23_webku_8testimonials/') && method === 'DELETE') {
         const id = path.split('/')[2]
         await db.collection('testimonials').deleteOne({ id })
