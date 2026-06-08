@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
+import './globals.css'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -38,12 +39,16 @@ function Navbar({ onCTAClick, whatsapp }) {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
       <div className="container mx-auto px-4 flex h-16 items-center justify-between">
-        <a href="#beranda" className="flex items-center gap-2 font-bold text-xl">
-          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground">
-            <Rocket className="w-5 h-5" />
-          </div>
-          <span className="gradient-text">Webku</span>
-        </a>
+<a href="#beranda" className="flex items-center">
+  {/* Wadah disesuaikan untuk logo memanjang, h-12 (48px) agar tingginya pas dengan navbar */}
+  <div className="h-20 w-auto flex items-center justify-start overflow-hidden">
+    <img 
+      src="https://res.cloudinary.com/dpaowxbve/image/upload/v1780879267/Logoaaazz_qz1txi.gif" 
+      alt="Logo Jati Damai" 
+      className="h-full w-auto object-contain"
+    />
+  </div>
+</a>
         <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-muted-foreground">
           {links.map(l => <a key={l.href} href={l.href} className="hover:text-foreground transition">{l.label}</a>)}
         </nav>
