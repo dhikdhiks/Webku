@@ -20,6 +20,10 @@ export const metadata = {
     description: 'Jasa pembuatan website profesional mulai Rp499.000.',
   },
   robots: { index: true, follow: true },
+
+  icons: {
+    icon: "/favicon.ico",
+  },
 }
 
 export default function RootLayout({ children }) {
