@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import './globals.css'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -15,7 +15,7 @@ import {
   Rocket, MessageCircle, Sparkles, Globe, Smartphone, Search, ShieldCheck, Zap, Headset,
   CheckCircle2, ArrowRight, Star, Phone, Mail, MapPin, Send, Quote, BookOpen,
   Palette, Image as ImageIcon, FileImage, FileText, Briefcase, Instagram, Package as PackageIcon,
-  CreditCard, Menu as MenuIcon, X,
+  CreditCard, Menu as MenuIcon, X, ChevronLeft, ChevronRight,
 } from 'lucide-react'
 
 const WA_DEFAULT = '6281227225178'
@@ -39,16 +39,15 @@ function Navbar({ onCTAClick, whatsapp }) {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
       <div className="container mx-auto px-4 flex h-16 items-center justify-between">
-<a href="#beranda" className="flex items-center">
-  {/* Wadah disesuaikan untuk logo memanjang, h-12 (48px) agar tingginya pas dengan navbar */}
-  <div className="h-20 w-auto flex items-center justify-start overflow-hidden">
-    <img 
-      src="https://res.cloudinary.com/dpaowxbve/image/upload/v1780879267/Logoaaazz_qz1txi.gif" 
-      alt="Logo Jati Damai" 
-      className="h-full w-auto object-contain"
-    />
-  </div>
-</a>
+        <a href="#beranda" className="flex items-center">
+          <div className="h-20 w-auto flex items-center justify-start overflow-hidden">
+            <img 
+              src="https://res.cloudinary.com/dpaowxbve/image/upload/v1780879267/Logoaaazz_qz1txi.gif" 
+              alt="Logo Jati Damai" 
+              className="h-full w-auto object-contain"
+            />
+          </div>
+        </a>
         <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-muted-foreground">
           {links.map(l => <a key={l.href} href={l.href} className="hover:text-foreground transition">{l.label}</a>)}
         </nav>
@@ -191,6 +190,97 @@ function Steps() {
               <p className="text-sm text-muted-foreground mt-2">{s.d}</p>
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// Komponen Slider Artikel
+function ArticleSlider({ articles }) {
+  const scrollRef = useRef(null)
+  const [showLeft, setShowLeft] = useState(false)
+  const [showRight, setShowRight] = useState(true)
+
+  const scroll = (direction) => {
+    if (scrollRef.current) {
+      const scrollAmount = direction === 'left' ? -300 : 300
+      scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
+    }
+  }
+
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
+      setShowLeft(scrollLeft > 0)
+      setShowRight(scrollLeft + clientWidth < scrollWidth - 10)
+    }
+  }
+
+  useEffect(() => {
+    const ref = scrollRef.current
+    if (ref) {
+      ref.addEventListener('scroll', checkScroll)
+      window.addEventListener('resize', checkScroll)
+      checkScroll()
+      return () => {
+        ref.removeEventListener('scroll', checkScroll)
+        window.removeEventListener('resize', checkScroll)
+      }
+    }
+  }, [articles])
+
+  if (!articles || articles.length === 0) return null
+
+  return (
+    <section className="py-20 bg-secondary/30">
+      <div className="container mx-auto px-4">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <Badge variant="outline" className="mb-4">Edukasi & Tips</Badge>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Pelajari Dulu Sebelum Memilih Website</h2>
+          <p className="mt-4 text-muted-foreground">Artikel ringkas untuk membantu Anda memahami website, domain, SEO, dan cara memaksimalkan bisnis online.</p>
+        </div>
+
+        <div className="relative group">
+          {showLeft && (
+            <button
+              onClick={() => scroll('left')}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur rounded-full p-2 shadow-md hover:bg-background transition-all -ml-4 md:-ml-6"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+          )}
+          {showRight && (
+            <button
+              onClick={() => scroll('right')}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur rounded-full p-2 shadow-md hover:bg-background transition-all -mr-4 md:-mr-6"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          )}
+          <div
+            ref={scrollRef}
+            className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 scrollbar-hide"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {articles.map((a) => (
+              <div key={a.id} className="min-w-[280px] sm:min-w-[320px] md:min-w-[380px] snap-start">
+                <Card className="overflow-hidden hover:shadow-xl hover:shadow-primary/10 transition-all border-border/60 h-full flex flex-col">
+                  <div className="aspect-video bg-muted overflow-hidden">
+                    <img src={a.thumbnail} alt={a.title} className="w-full h-full object-cover hover:scale-105 transition duration-500" />
+                  </div>
+                  <CardContent className="p-5 flex flex-col flex-grow">
+                    <Badge variant="outline" className="text-xs w-fit">{a.category}</Badge>
+                    <h3 className="font-semibold text-base mt-3 line-clamp-2">{a.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-2 line-clamp-3 flex-grow">{a.excerpt}</p>
+                    <Button variant="link" className="mt-3 p-0 h-auto text-primary justify-start" asChild>
+                      <a href={`/blog/${a.slug}`}>Baca selengkapnya →</a>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -346,33 +436,6 @@ function Testimonials({ list }) {
   )
 }
 
-function Articles({ list }) {
-  return (
-    <section id="blog" className="py-20 bg-secondary/30">
-      <div className="container mx-auto px-4">
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <Badge variant="outline" className="mb-4">Blog & Edukasi</Badge>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Artikel Terbaru</h2>
-        </div>
-        <div className="grid md:grid-cols-3 gap-6">
-          {list.slice(0, 6).map(a => (
-            <Card key={a.id} className="overflow-hidden hover:shadow-xl hover:shadow-primary/10 transition-all border-border/60 group">
-              <div className="aspect-video bg-muted overflow-hidden">
-                <img src={a.thumbnail} alt={a.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-              </div>
-              <CardContent className="p-5">
-                <Badge variant="outline" className="text-xs">{a.category}</Badge>
-                <h3 className="font-semibold text-base mt-3 line-clamp-2">{a.title}</h3>
-                <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{a.excerpt}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
 function FAQ({ list }) {
   return (
     <section id="faq" className="py-20">
@@ -406,7 +469,6 @@ function InquiryForm({ whatsapp, prefilled, onSent, services = [], packages = []
     setForm(f => ({ ...f, service: prefilled?.name || f.service }));
   }, [prefilled]);
 
-  // Gabungkan opsi untuk datalist (paket + demo)
   const serviceOptions = useMemo(() => {
     const pkgNames = (packages || []).map(p => p.name);
     const demoNames = (demos || []).map(d => d.name);
@@ -479,17 +541,17 @@ function InquiryForm({ whatsapp, prefilled, onSent, services = [], packages = []
         <div>
           <Label>Layanan Pendukung (opsional)</Label>
           <div className="grid grid-cols-2 gap-2 mt-2">
-{services.map(s => (
-  <label key={s.id} className="flex items-center gap-2 text-sm">
-    <input
-      type="checkbox"
-      checked={additionalServices.includes(s.name)}
-      onChange={() => toggleAdditionalService(s.name)}
-      className="rounded border-primary"
-    />
-    {s.name}
-  </label>
-))}
+            {services.map(s => (
+              <label key={s.id} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={additionalServices.includes(s.name)}
+                  onChange={() => toggleAdditionalService(s.name)}
+                  className="rounded border-primary"
+                />
+                {s.name}
+              </label>
+            ))}
           </div>
         </div>
       )}
@@ -530,7 +592,7 @@ function Contact({ whatsapp, services, packages, demos }) {
             <CardContent className="p-6 md:p-8">
               <h3 className="font-bold text-xl mb-1">Konsultasi Gratis</h3>
               <p className="text-sm text-muted-foreground mb-6">Isi form di bawah, kami akan menghubungi via WhatsApp.</p>
-             <InquiryForm whatsapp={whatsapp} services={services} packages={packages} demos={demos} />
+              <InquiryForm whatsapp={whatsapp} services={services} packages={packages} demos={demos} />
             </CardContent>
           </Card>
         </div>
@@ -645,11 +707,11 @@ export default function App() {
         <Hero stats={stats} onCTAClick={onCTA} whatsapp={whatsapp} />
         <Advantages />
         <Steps />
+        <ArticleSlider articles={articles} />
         <Catalog demos={demos} categories={categories} whatsapp={whatsapp} onPesan={openOrder} onDetail={setDetail} />
         <Packages packages={packages} onPesan={openOrder} />
         <Services services={services} onPesan={openOrder} />
         <Testimonials list={testimonials} />
-        <Articles list={articles} />
         <FAQ list={faqs} />
         <Contact whatsapp={whatsapp} services={services} packages={packages} demos={demos} />
       </main>
