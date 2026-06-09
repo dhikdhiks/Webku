@@ -443,12 +443,22 @@ function FAQ({ list }) {
         <div className="text-center mb-14">
           <Badge variant="outline" className="mb-4">FAQ</Badge>
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Pertanyaan yang Sering Diajukan</h2>
+          <p className="mt-4 text-muted-foreground">Temukan jawaban atas pertanyaan umum seputar website dan layanan kami.</p>
         </div>
-        <Accordion type="single" collapsible className="w-full">
+        <Accordion type="single" collapsible className="w-full space-y-3">
           {list.map((f, i) => (
-            <AccordionItem key={f.id} value={`item-${i}`}>
-              <AccordionTrigger className="text-left">{f.question}</AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">{f.answer}</AccordionContent>
+            <AccordionItem key={f.id} value={`item-${i}`} className="border border-border/60 rounded-xl px-4 bg-card hover:shadow-md transition-all">
+              <AccordionTrigger className="text-left py-4 hover:no-underline group">
+                <span className="flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold group-hover:bg-primary group-hover:text-primary-foreground transition">
+                    {i+1}
+                  </span>
+                  <span className="font-semibold">{f.question}</span>
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pb-4 pl-9">
+                {f.answer}
+              </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
@@ -657,6 +667,7 @@ function WhatsAppFloating({ whatsapp }) {
 }
 
 export default function App() {
+  const [loading, setLoading] = useState(true)
   const [categories, setCategories] = useState([])
   const [demos, setDemos] = useState([])
   const [packages, setPackages] = useState([])
@@ -670,7 +681,7 @@ export default function App() {
   const [detail, setDetail] = useState(null)
   const [prefilled, setPrefilled] = useState(null)
 
-  useEffect(() => {
+ useEffect(() => {
     (async () => {
       try {
         const [cats, dms, pkg, svc, tst, fq, art, st] = await Promise.all([
@@ -693,9 +704,18 @@ export default function App() {
         if (st?.settings?.whatsapp) setWhatsapp(st.settings.whatsapp)
         if (st?.stats) setStats(st.stats)
         api('track', { method: 'POST' }).catch(() => {})
-      } catch (e) { console.error(e) }
+        setLoading(false)
+      } catch (e) { console.error(e); setLoading(false) }
     })()
   }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
 
   const openOrder = (item) => { setPrefilled(item); setOrderOpen(true) }
   const onCTA = () => { setPrefilled(null); setOrderOpen(true) }

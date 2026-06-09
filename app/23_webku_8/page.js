@@ -562,6 +562,85 @@ function TestimonialsManager({ token }) {
   )
 }
 
+function FAQManager({ token }) {
+  const [list, setList] = useState([])
+  const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [form, setForm] = useState({ question: '', answer: '' })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const load = () => api('faqs').then(setList)
+  useEffect(() => { load() }, [token])
+
+  const save = async (e) => {
+    e.preventDefault()
+    if (isSubmitting) return
+    setIsSubmitting(true)
+    try {
+      if (editing) {
+        await api(`23_webku_8faqs/${editing.id}`, { method: 'PATCH', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
+        toast.success('FAQ diperbarui')
+      } else {
+        await api('23_webku_8faqs', { method: 'POST', headers: { 'x-admin-pass': token }, body: JSON.stringify(form) })
+        toast.success('FAQ ditambahkan')
+      }
+      setOpen(false); setEditing(null); setForm({ question: '', answer: '' }); load()
+    } catch (e) { toast.error(e.message) }
+    finally { setIsSubmitting(false) }
+  }
+
+  const del = async (id) => {
+    if (!confirm('Hapus FAQ ini?')) return
+    await api(`23_webku_8faqs/${id}`, { method: 'DELETE', headers: { 'x-admin-pass': token } })
+    toast.success('Dihapus'); load()
+  }
+
+  const handleEdit = (faq) => {
+    setEditing(faq)
+    setForm({ question: faq.question, answer: faq.answer })
+    setOpen(true)
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">FAQ ({list.length})</h2>
+        <Button onClick={() => { setEditing(null); setForm({ question: '', answer: '' }); setOpen(!open) }}>
+          <Plus className="w-4 h-4 mr-1" /> Tambah FAQ
+        </Button>
+      </div>
+      {open && (
+        <Card><CardContent className="p-5">
+          <form onSubmit={save} className="space-y-3">
+            <div><Label>Pertanyaan</Label><Input required value={form.question} onChange={e => setForm({...form, question: e.target.value})} /></div>
+            <div><Label>Jawaban</Label><Textarea rows={4} value={form.answer} onChange={e => setForm({...form, answer: e.target.value})} /></div>
+            <Button type="submit" className="bg-primary" disabled={isSubmitting}>{isSubmitting ? 'Menyimpan...' : (editing ? 'Update' : 'Simpan')}</Button>
+          </form>
+        </CardContent></Card>
+      )}
+      <div className="space-y-3">
+        {list.map(faq => (
+          <Card key={faq.id}>
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h3 className="font-semibold">{faq.question}</h3>
+                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{faq.answer}</p>
+                </div>
+                <div className="flex gap-1">
+                  <Button size="icon" variant="ghost" onClick={() => handleEdit(faq)}><Pencil className="w-4 h-4" /></Button>
+                  <Button size="icon" variant="ghost" onClick={() => del(faq.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+        {list.length === 0 && <Card><CardContent className="p-8 text-center text-muted-foreground">Belum ada FAQ.</CardContent></Card>}
+      </div>
+    </div>
+  )
+}
+
 export default function AdminApp() {
   const [token, setToken] = useState(null)
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -580,15 +659,16 @@ export default function AdminApp() {
     setToken(null)
   }
 
-  const tabs = [
-    { id: 'dashboard', label: 'Dashboard', component: Dashboard },
-    { id: 'inquiries', label: 'Inquiry', component: Inquiries },
-    { id: 'demos', label: 'Demo Website', component: DemoManager },
-    { id: 'articles', label: 'Artikel', component: ArticleManager },
-    { id: 'packages', label: 'Paket', component: PackagesManager },
-    { id: 'services', label: 'Layanan', component: ServicesManager },
-    { id: 'testimonials', label: 'Testimoni', component: TestimonialsManager },
-  ]
+const tabs = [
+  { id: 'dashboard', label: 'Dashboard', component: Dashboard },
+  { id: 'inquiries', label: 'Inquiry', component: Inquiries },
+  { id: 'demos', label: 'Demo Website', component: DemoManager },
+  { id: 'articles', label: 'Artikel', component: ArticleManager },
+  { id: 'packages', label: 'Paket', component: PackagesManager },
+  { id: 'services', label: 'Layanan', component: ServicesManager },
+  { id: 'testimonials', label: 'Testimoni', component: TestimonialsManager },
+  { id: 'faqs', label: 'FAQ', component: FAQManager }, // <-- TAMBAHKAN BARIS INI
+]
 
   const ActiveComponent = tabs.find(t => t.id === activeTab)?.component || Dashboard
 

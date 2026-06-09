@@ -179,6 +179,12 @@ async function ensureSeed(db) {
   ]
   await db.collection('articles').insertMany(articles)
 
+  // Buat indeks untuk optimasi query
+await db.collection('website_demos').createIndex({ categorySlug: 1, createdAt: -1 })
+await db.collection('articles').createIndex({ createdAt: -1 })
+await db.collection('faq').createIndex({ order: 1, createdAt: 1 })
+await db.collection('inquiries').createIndex({ createdAt: -1 })
+
   await db.collection('settings').insertOne({
     key: 'seeded', value: true, createdAt: new Date(),
     whatsapp: '6281227225178',
@@ -465,6 +471,33 @@ const inq = {
         await db.collection('services').deleteOne({ id })
         return j({ ok: true })
       }
+
+      // ==================== FAQ ====================
+if (path === '23_webku_8faqs' && method === 'POST') {
+  const body = await request.json()
+  const doc = {
+    id: uuidv4(),
+    question: body.question,
+    answer: body.answer,
+    order: body.order || 0,
+    createdAt: new Date(),
+  }
+  await db.collection('faq').insertOne(doc)
+  return j({ ok: true, id: doc.id })
+}
+if (path.startsWith('23_webku_8faqs/') && method === 'PATCH') {
+  const id = path.split('/')[1]
+  const body = await request.json()
+  const existing = await db.collection('faq').findOne({ id })
+  if (!existing) return j({ error: 'FAQ not found' }, 404)
+  await db.collection('faq').updateOne({ id }, { $set: { ...body, updatedAt: new Date() } })
+  return j({ ok: true })
+}
+if (path.startsWith('23_webku_8faqs/') && method === 'DELETE') {
+  const id = path.split('/')[1]
+  await db.collection('faq').deleteOne({ id })
+  return j({ ok: true })
+}
 
       // ==================== TESTIMONIALS (DENGAN PATCH) ====================
       if (path === '23_webku_8testimonials' && method === 'POST') {
