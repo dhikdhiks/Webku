@@ -260,19 +260,22 @@ async function handler(request, { params }) {
       return j(r)
     }
     if (path === 'inquiries' && method === 'POST') {
+
       const body = await request.json()
-      const inq = {
-        id: uuidv4(),
-        name: body.name || '',
-        whatsapp: body.whatsapp || '',
-        email: body.email || '',
-        service: body.service || '',
-        message: body.message || '',
-        businessType: body.businessType || '',
-        domicile: body.domicile || '',
-        status: 'baru',
-        createdAt: new Date(),
-      }
+const inq = {
+  id: uuidv4(),
+  name: body.name || '',
+  whatsapp: body.whatsapp || '',
+  email: body.email || '',
+  service: body.service || '',
+  message: body.message || '',
+  businessType: body.businessType || '',
+  domicile: body.domicile || '',
+  additionalServices: body.additionalServices || [],   // <-- BARIS INI DITAMBAHKAN
+  status: 'baru',
+  createdAt: new Date(),
+}
+
       if (!inq.name || !inq.whatsapp) return j({ error: 'Nama dan WhatsApp wajib diisi' }, 400)
       await db.collection('inquiries').insertOne(inq)
       await db.collection('visitor_stats').insertOne({ id: uuidv4(), type: 'inquiry', at: new Date() })
