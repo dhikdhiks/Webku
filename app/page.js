@@ -502,7 +502,7 @@ function InquiryForm({ whatsapp, prefilled, onSent, services = [], packages = []
   );
 }
 
-function Contact({ whatsapp }) {
+function Contact({ whatsapp, services, packages, demos }) {
   return (
     <section id="kontak" className="py-20 bg-gradient-to-br from-primary/5 via-background to-primary/5">
       <div className="container mx-auto px-4">
@@ -651,7 +651,7 @@ export default function App() {
         <Testimonials list={testimonials} />
         <Articles list={articles} />
         <FAQ list={faqs} />
-        <Contact whatsapp={whatsapp} />
+        <Contact whatsapp={whatsapp} services={services} packages={packages} demos={demos} />
       </main>
       <Footer />
       <WhatsAppFloating whatsapp={whatsapp} />
