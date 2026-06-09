@@ -479,17 +479,17 @@ function InquiryForm({ whatsapp, prefilled, onSent, services = [], packages = []
         <div>
           <Label>Layanan Pendukung (opsional)</Label>
           <div className="grid grid-cols-2 gap-2 mt-2">
-            {services.map(s => (
-              <label key={s.id} className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={additionalServices.includes(s.name)}
-                  onChange={() => toggleAdditionalService(s.name)}
-                  className="rounded border-primary"
-                />
-                {s.name} ({formatRupiah(s.price)})
-              </label>
-            ))}
+{services.map(s => (
+  <label key={s.id} className="flex items-center gap-2 text-sm">
+    <input
+      type="checkbox"
+      checked={additionalServices.includes(s.name)}
+      onChange={() => toggleAdditionalService(s.name)}
+      className="rounded border-primary"
+    />
+    {s.name}
+  </label>
+))}
           </div>
         </div>
       )}
