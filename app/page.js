@@ -42,7 +42,7 @@ function Navbar({ onCTAClick, whatsapp }) {
         <a href="#beranda" className="flex items-center">
           <div className="h-20 w-auto flex items-center justify-start overflow-hidden">
             <img 
-              src="https://res.cloudinary.com/dpaowxbve/image/upload/v1781359615/Logoaaazz-ezgif.com-gif-maker_b3fe8q.gif" 
+              src="https://res.cloudinary.com/dpaowxbve/image/upload/v1781363789/Logoaaazz_2_d0cneq.gif" 
               alt="Logo Jati Damai" 
               className="h-full w-auto object-contain"
             />
