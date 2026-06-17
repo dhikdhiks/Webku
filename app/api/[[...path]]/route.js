@@ -356,30 +356,29 @@ const inq = {
         await db.collection('website_demos').insertOne(doc)
         return j({ ok: true, id: doc.id })
       }
-      if (path.startsWith('23_webku_8demos/') && method === 'PATCH') {
-        const id = path.split('/')[1]
-        const body = await request.json()
-        // Periksa apakah demo dengan id tersebut ada
-        const existing = await db.collection('website_demos').findOne({ id })
-        if (!existing) {
-          console.error(`Demo not found with id: ${id}`)
-          return j({ error: `Demo not found with id: ${id}` }, 404)
-        }
-        const updateData = {
-          name: body.name,
-          slug: (body.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
-          thumbnail: body.thumbnail || '',
-          categorySlug: body.categorySlug,
-          category: body.category,
-          description: body.description || '',
-          price: parseInt(body.price) || 0,
-          demoUrl: body.demoUrl || '',
-          updatedAt: new Date(),
-        }
-        if (body.features) updateData.features = body.features
-        await db.collection('website_demos').updateOne({ id }, { $set: updateData })
-        return j({ ok: true })
-      }
+if (path.startsWith('23_webku_8demos/') && method === 'PATCH') {
+  const id = path.split('/')[1]
+  const body = await request.json()
+  const existing = await db.collection('website_demos').findOne({ id })
+  if (!existing) {
+    console.error(`Demo not found with id: ${id}`)
+    return j({ error: `Demo not found with id: ${id}` }, 404)
+  }
+  const updateData = {
+    name: body.name,
+    slug: (body.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+    thumbnail: body.thumbnail || '',
+    categorySlug: body.categorySlug,
+    category: body.category,
+    description: body.description || '',
+    price: parseInt(body.price) || 0,
+    demoUrl: body.demoUrl || '',
+    updatedAt: new Date(),
+  }
+  if (body.features) updateData.features = body.features   // <-- TAMBAHKAN BARIS INI
+  await db.collection('website_demos').updateOne({ id }, { $set: updateData })
+  return j({ ok: true })
+}
       if (path.startsWith('23_webku_8demos/') && method === 'DELETE') {
         const id = path.split('/')[1]
         await db.collection('website_demos').deleteOne({ id })

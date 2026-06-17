@@ -197,7 +197,7 @@ function Steps() {
 }
 
 // Komponen Slider Artikel
-function ArticleSlider({ articles }) {
+function ArticleSlider({ articles, onReadMore }) {
   const scrollRef = useRef(null)
   const [showLeft, setShowLeft] = useState(false)
   const [showRight, setShowRight] = useState(true)
@@ -233,7 +233,7 @@ function ArticleSlider({ articles }) {
   if (!articles || articles.length === 0) return null
 
   return (
-    <section className="py-20 bg-secondary/30">
+    <section id="blog" className="py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-2xl mx-auto mb-10">
           <Badge variant="outline" className="mb-4">Edukasi & Tips</Badge>
@@ -273,8 +273,12 @@ function ArticleSlider({ articles }) {
                     <Badge variant="outline" className="text-xs w-fit">{a.category}</Badge>
                     <h3 className="font-semibold text-base mt-3 line-clamp-2">{a.title}</h3>
                     <p className="text-sm text-muted-foreground mt-2 line-clamp-3 flex-grow">{a.excerpt}</p>
-                    <Button variant="link" className="mt-3 p-0 h-auto text-primary justify-start" asChild>
-                      <a href={`/blog/${a.slug}`}>Baca selengkapnya →</a>
+                    <Button 
+                      variant="link" 
+                      className="mt-3 p-0 h-auto text-primary justify-start" 
+                      onClick={() => onReadMore(a)}
+                    >
+                      Baca selengkapnya →
                     </Button>
                   </CardContent>
                 </Card>
@@ -679,6 +683,7 @@ export default function App() {
   const [stats, setStats] = useState(null)
   const [orderOpen, setOrderOpen] = useState(false)
   const [detail, setDetail] = useState(null)
+  const [articleDetail, setArticleDetail] = useState(null)
   const [prefilled, setPrefilled] = useState(null)
 
  useEffect(() => {
@@ -727,7 +732,7 @@ export default function App() {
         <Hero stats={stats} onCTAClick={onCTA} whatsapp={whatsapp} />
         <Advantages />
         <Steps />
-        <ArticleSlider articles={articles} />
+        <ArticleSlider articles={articles} onReadMore={setArticleDetail} />
         <Catalog demos={demos} categories={categories} whatsapp={whatsapp} onPesan={openOrder} onDetail={setDetail} />
         <Packages packages={packages} onPesan={openOrder} />
         <Services services={services} onPesan={openOrder} />
@@ -738,6 +743,7 @@ export default function App() {
       <Footer />
       <WhatsAppFloating whatsapp={whatsapp} />
 
+      {/* Dialog untuk form pemesanan */}
       <Dialog open={orderOpen} onOpenChange={setOrderOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -748,6 +754,7 @@ export default function App() {
         </DialogContent>
       </Dialog>
 
+      {/* Dialog untuk detail demo */}
       <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           {detail && (
@@ -788,6 +795,75 @@ export default function App() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Dialog untuk detail artikel - TAMBAHAN BARU */}
+{/* Modal Detail Artikel yang DIPERBAIKI */}
+<Dialog open={!!articleDetail} onOpenChange={(o) => !o && setArticleDetail(null)}>
+  <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0 sm:p-6">
+    {articleDetail && (
+      <>
+        {/* Header dengan gambar hero */}
+        <div className="relative aspect-[16/9] w-full overflow-hidden rounded-t-xl sm:rounded-xl">
+          <img 
+            src={articleDetail.thumbnail} 
+            alt={articleDetail.title} 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <div className="absolute bottom-4 left-4 right-4">
+            <Badge variant="outline" className="bg-background/80 backdrop-blur text-foreground border-none">
+              {articleDetail.category}
+            </Badge>
+            <h2 className="text-xl sm:text-2xl font-bold text-white mt-2 line-clamp-2">
+              {articleDetail.title}
+            </h2>
+          </div>
+        </div>
+
+        {/* Konten artikel */}
+        <div className="px-5 pb-6 pt-2 sm:px-6">
+          {/* Meta informasi */}
+          <div className="flex items-center gap-3 text-xs text-muted-foreground mb-4 border-b pb-3">
+            <span>📅 {new Date(articleDetail.createdAt).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            <span>👤 Admin Webku</span>
+          </div>
+
+          {/* Excerpt (ringkasan) */}
+          <div className="bg-secondary/50 rounded-lg p-4 mb-5 italic text-sm border-l-4 border-primary">
+            {articleDetail.excerpt}
+          </div>
+
+          {/* Konten lengkap dengan styling rich text */}
+          <div 
+            className="article-content"
+            dangerouslySetInnerHTML={{ __html: articleDetail.content.replace(/\n/g, '<br/>') }}
+          />
+
+          {/* Tombol aksi */}
+          <div className="flex flex-col sm:flex-row gap-3 mt-8 pt-4 border-t">
+            <Button 
+              variant="outline" 
+              onClick={() => setArticleDetail(null)}
+              className="flex-1"
+            >
+              Tutup
+            </Button>
+            <Button 
+              onClick={() => {
+                setArticleDetail(null);
+                openOrder({ name: `Artikel: ${articleDetail.title}` });
+              }} 
+              className="flex-1 bg-primary text-primary-foreground"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Konsultasi Sekarang
+            </Button>
+          </div>
+        </div>
+      </>
+    )}
+  </DialogContent>
+</Dialog>
     </div>
   )
 }

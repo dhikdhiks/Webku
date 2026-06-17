@@ -81,3 +81,65 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Styling untuk konten artikel (rich text) */
+.article-content {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: hsl(var(--foreground));
+}
+
+.article-content p {
+  margin-bottom: 1rem;
+}
+
+.article-content h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.article-content h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.article-content ul, .article-content ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.article-content li {
+  margin-bottom: 0.25rem;
+}
+
+.article-content a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+}
+
+.article-content img {
+  border-radius: 0.75rem;
+  margin: 1rem 0;
+  max-width: 100%;
+  height: auto;
+}
+
+.article-content blockquote {
+  border-left: 4px solid hsl(var(--primary));
+  padding-left: 1rem;
+  font-style: italic;
+  margin: 1rem 0;
+  color: hsl(var(--muted-foreground));
+}
+
+.dialog-content {
+  animation: fadeInScale 0.2s ease-out;
+}
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}

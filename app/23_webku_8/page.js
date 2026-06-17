@@ -157,30 +157,53 @@ function DemoManager({ token }) {
   const [cats, setCats] = useState([])
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState(null)
-  const [form, setForm] = useState({ name: '', categorySlug: '', description: '', price: 1499000, thumbnail: '', demoUrl: '' })
+  const [form, setForm] = useState({ name: '', categorySlug: '', description: '', price: 1499000, thumbnail: '', demoUrl: '', features: [] })
+  const [featuresInput, setFeaturesInput] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   
   const load = () => api('demos').then(setList)
   useEffect(() => { load(); api('categories').then(setCats) }, [])
 
+  // Fungsi untuk mereset form dan menutup modal
+const resetDemoForm = () => {
+  setEditing(null)
+  setForm({ name: '', categorySlug: '', description: '', price: 1499000, thumbnail: '', demoUrl: '', features: [] })
+  setFeaturesInput('')
+  setOpen(false)
+}
+
+  // Save (tambah demo baru)
   const save = async (e) => {
     e.preventDefault()
     if (isSubmitting) return
     setIsSubmitting(true)
     const cat = cats.find(c => c.slug === form.categorySlug)
+    const featuresArray = featuresInput.split(',').map(f => f.trim()).filter(f => f !== '')
     try {
-      await api('23_webku_8demos', { method: 'POST', headers: { 'x-admin-pass': token }, body: JSON.stringify({ ...form, category: cat?.name, price: parseInt(form.price), features: ['Responsive', 'SEO Friendly', 'Mobile First'] }) })
+      await api('23_webku_8demos', {
+        method: 'POST',
+        headers: { 'x-admin-pass': token },
+        body: JSON.stringify({
+          ...form,
+          category: cat?.name,
+          price: parseInt(form.price),
+          features: featuresArray
+        })
+      })
       toast.success('Demo ditambahkan')
-      setOpen(false); setForm({ name: '', categorySlug: '', description: '', price: 1499000, thumbnail: '', demoUrl: '' }); load()
+      resetDemoForm()
+      load()
     } catch (e) { toast.error(e.message) }
     finally { setIsSubmitting(false) }
   }
   
+  // Update demo yang sudah ada
   const updateDemo = async (e) => {
     e.preventDefault()
     if (isSubmitting || !editing) return
     setIsSubmitting(true)
     const cat = cats.find(c => c.slug === form.categorySlug)
+    const featuresArray = featuresInput.split(',').map(f => f.trim()).filter(f => f !== '')
     const payload = {
       name: form.name,
       categorySlug: form.categorySlug,
@@ -188,7 +211,8 @@ function DemoManager({ token }) {
       price: parseInt(form.price) || 0,
       thumbnail: form.thumbnail || '',
       demoUrl: form.demoUrl || '',
-      category: cat?.name || ''
+      category: cat?.name || '',
+      features: featuresArray
     }
     try {
       await api(`23_webku_8demos/${editing.id}`, {
@@ -197,10 +221,8 @@ function DemoManager({ token }) {
         body: JSON.stringify(payload)
       })
       toast.success('Demo berhasil diperbarui')
-      setEditing(null)
-      setForm({ name: '', categorySlug: '', description: '', price: 1499000, thumbnail: '', demoUrl: '' })
-      setOpen(false)
-      await load()
+      resetDemoForm()
+      load()
     } catch (e) { 
       toast.error(e.message || 'Gagal update demo')
     } finally { 
@@ -214,20 +236,16 @@ function DemoManager({ token }) {
     toast.success('Dihapus'); load()
   }
 
-  const resetForm = () => {
-    setEditing(null)
-    setForm({ name: '', categorySlug: '', description: '', price: 1499000, thumbnail: '', demoUrl: '' })
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Demo Website ({list.length})</h2>
-        <Button onClick={() => { resetForm(); setOpen(!open) }}>
+        <Button onClick={() => { resetDemoForm(); setOpen(true) }}>
           <Plus className="w-4 h-4 mr-1" />
           Tambah Demo
         </Button>
       </div>
+      
       {open && (
         <Card><CardContent className="p-5">
           <form onSubmit={editing ? updateDemo : save}>
@@ -245,6 +263,18 @@ function DemoManager({ token }) {
               <div><Label>Demo URL</Label><Input value={form.demoUrl} onChange={e => setForm({ ...form, demoUrl: e.target.value })} /></div>
             </div>
             <div><Label>Thumbnail URL</Label><Input required value={form.thumbnail} onChange={e => setForm({ ...form, thumbnail: e.target.value })} placeholder="https://..." /></div>
+            
+            {/* INPUT FEATURES - INI YANG DITAMBAHKAN */}
+            <div>
+              <Label>Fitur (pisahkan dengan koma)</Label>
+              <Input 
+                value={featuresInput} 
+                onChange={e => setFeaturesInput(e.target.value)} 
+                placeholder="Responsive, SEO Friendly, Admin Panel, Integrasi WhatsApp" 
+              />
+              <p className="text-xs text-muted-foreground mt-1">Contoh: Responsif, Mobile First, SEO Friendly</p>
+            </div>
+            
             <div><Label>Deskripsi</Label><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
             <Button type="submit" className="bg-primary text-primary-foreground" disabled={isSubmitting}>
               {isSubmitting ? 'Menyimpan...' : (editing ? 'Update Demo' : 'Simpan Demo')}
@@ -252,6 +282,7 @@ function DemoManager({ token }) {
           </form>
         </CardContent></Card>
       )}
+      
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {list.map(d => (
           <Card key={d.id}>
@@ -262,6 +293,13 @@ function DemoManager({ token }) {
                   <h3 className="font-semibold">{d.name}</h3>
                   <div className="text-xs text-muted-foreground">{d.category}</div>
                   <div className="text-primary font-bold mt-1">{formatRupiah(d.price)}</div>
+                  {/* Preview fitur (opsional) */}
+                  {d.features && d.features.length > 0 && (
+                    <div className="text-xs text-muted-foreground mt-2">
+                      <span className="font-medium">Fitur: </span>
+                      {d.features.slice(0, 3).join(', ')}{d.features.length > 3 && ' ...'}
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-1">
                   <Button
@@ -275,8 +313,10 @@ function DemoManager({ token }) {
                         description: d.description || '',
                         price: d.price || 0,
                         thumbnail: d.thumbnail || '',
-                        demoUrl: d.demoUrl || ''
+                        demoUrl: d.demoUrl || '',
+                        features: d.features || []
                       })
+                      setFeaturesInput(d.features ? d.features.join(', ') : '')
                       setOpen(true)
                     }}
                   >
