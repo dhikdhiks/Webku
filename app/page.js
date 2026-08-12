@@ -500,7 +500,7 @@ function InquiryForm({ whatsapp, prefilled, onSent, services = [], packages = []
       </div>
       <div className="grid md:grid-cols-2 gap-4">
         <div><Label>Jenis Usaha</Label><Input value={form.businessType} onChange={e => setForm({ ...form, businessType: e.target.value })} placeholder="Toko Fashion" /></div>
-        <div><Label>Domisili</Label><Input value={form.domicile} onChange={e => setForm({ ...form, domicile: e.target.value })} placeholder="Jakarta" /></div>
+        <div><Label>Domisili</Label><Input value={form.domicile} onChange={e => setForm({ ...form, domicile: e.target.value })} placeholder="Yogyakarta" /></div>
       </div>
 
       {services && services.length > 0 && (
@@ -546,11 +546,11 @@ function Contact({ whatsapp, services = [], packages = [] }) {
               </a>
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><Mail className="w-5 h-5" /></div>
-                <div><div className="text-xs text-muted-foreground">Email</div><div className="font-semibold">halo@webku.id</div></div>
+                <div><div className="text-xs text-muted-foreground">Email</div><div className="font-semibold">webkuuuid@gmail.com</div></div>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><MapPin className="w-5 h-5" /></div>
-                <div><div className="text-xs text-muted-foreground">Lokasi</div><div className="font-semibold">Jakarta, Indonesia</div></div>
+                <div><div className="text-xs text-muted-foreground">Lokasi</div><div className="font-semibold">Yogyakarta, Indonesia</div></div>
               </div>
             </div>
           </div>
@@ -602,8 +602,8 @@ function Footer() {
           <div>
             <h4 className="font-semibold mb-3">Kontak</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>halo@webku.id</li>
-              <li>Jakarta, Indonesia</li>
+              <li>webkuuuid@gmail.com</li>
+              <li>Yogyakarta, Indonesia</li>
             </ul>
           </div>
         </div>
