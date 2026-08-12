@@ -111,7 +111,13 @@ async function ensureSeed(db) {
     status: 'active',
     demoUrl: d.demoUrl,
     createdAt: new Date(),
-  }))
+    keywords: [                              // <-- TAMBAHKAN
+       d.name.toLowerCase(),
+       d.categorySlug,
+       ...d.desc.split(' ').filter(w => w.length > 3),
+       ...['Responsive Mobile First', 'SEO Friendly', 'Loading Super Cepat', 'Admin Panel', 'Integrasi WhatsApp', 'SSL Security'].map(f => f.toLowerCase())
+    ]
+ }));
   await db.collection('website_demos').insertMany(demoDocs)
 
   const services = [

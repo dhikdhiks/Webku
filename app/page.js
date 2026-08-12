@@ -29,7 +29,6 @@ function Navbar({ onCTAClick, whatsapp }) {
   const [open, setOpen] = useState(false)
   const links = [
     { href: '#beranda', label: 'Beranda' },
-    { href: '#katalog', label: 'Katalog' },
     { href: '#paket', label: 'Paket' },
     { href: '#layanan', label: 'Layanan' },
     { href: '#blog', label: 'Blog' },
@@ -42,7 +41,7 @@ function Navbar({ onCTAClick, whatsapp }) {
         <a href="#beranda" className="flex items-center">
           <div className="h-20 w-auto flex items-center justify-start overflow-hidden">
             <img 
-              src="https://res.cloudinary.com/dpaowxbve/image/upload/v1781363789/Logoaaazz_2_d0cneq.gif" 
+              src="https://res.cloudinary.com/dpaowxbve/image/upload/v1781960156/Logoaaazz_6_ynhb0m.gif" 
               alt="Logo Jati Damai" 
               className="h-full w-auto object-contain"
             />
@@ -95,9 +94,6 @@ function Hero({ stats, onCTAClick, whatsapp }) {
             <div className="mt-8 flex flex-wrap gap-3">
               <Button size="lg" onClick={onCTAClick} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full text-base h-12 px-7 shadow-xl shadow-primary/30">
                 <MessageCircle className="w-5 h-5 mr-2" /> Chat WhatsApp Sekarang
-              </Button>
-              <Button size="lg" variant="outline" asChild className="rounded-full h-12 px-7">
-                <a href="#katalog">Lihat Katalog <ArrowRight className="w-4 h-4 ml-2" /></a>
               </Button>
             </div>
             <div className="mt-10 grid grid-cols-4 gap-4 max-w-lg">
@@ -197,93 +193,95 @@ function Steps() {
 }
 
 // Komponen Slider Artikel
-function ArticleSlider({ articles, onReadMore }) {
+function ArticleSlider({ articles = [], onReadMore }) {
   const scrollRef = useRef(null)
   const [showLeft, setShowLeft] = useState(false)
   const [showRight, setShowRight] = useState(true)
+  const [expandedId, setExpandedId] = useState(null)
 
   const scroll = (direction) => {
-    if (scrollRef.current) {
-      const scrollAmount = direction === 'left' ? -300 : 300
-      scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
-    }
+    if (!scrollRef.current) return
+    const { scrollLeft, clientWidth } = scrollRef.current
+    const offset = direction === 'left' ? -clientWidth * 0.8 : clientWidth * 0.8
+    scrollRef.current.scrollTo({ left: scrollLeft + offset, behavior: 'smooth' })
   }
 
   const checkScroll = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
-      setShowLeft(scrollLeft > 0)
-      setShowRight(scrollLeft + clientWidth < scrollWidth - 10)
-    }
+    if (!scrollRef.current) return
+    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
+    setShowLeft(scrollLeft > 10)
+    setShowRight(scrollLeft < scrollWidth - clientWidth - 10)
   }
 
   useEffect(() => {
-    const ref = scrollRef.current
-    if (ref) {
-      ref.addEventListener('scroll', checkScroll)
-      window.addEventListener('resize', checkScroll)
-      checkScroll()
-      return () => {
-        ref.removeEventListener('scroll', checkScroll)
-        window.removeEventListener('resize', checkScroll)
-      }
-    }
+    checkScroll()
+    window.addEventListener('resize', checkScroll)
+    return () => window.removeEventListener('resize', checkScroll)
   }, [articles])
+
+  const handleToggleExpand = (article) => {
+    if (expandedId === article.id) {
+      setExpandedId(null)
+    } else {
+      setExpandedId(article.id)
+    }
+  }
 
   if (!articles || articles.length === 0) return null
 
   return (
     <section id="blog" className="py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
-        <div className="text-center max-w-2xl mx-auto mb-10">
-          <Badge variant="outline" className="mb-4">Edukasi & Tips</Badge>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Pelajari Dulu Sebelum Memilih Website</h2>
-          <p className="mt-4 text-muted-foreground">Artikel ringkas untuk membantu Anda memahami website, domain, SEO, dan cara memaksimalkan bisnis online.</p>
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <Badge variant="outline" className="mb-4">Blog & Artikel</Badge>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Tips & Inspirasi Bisnis</h2>
+          <p className="mt-4 text-muted-foreground">Temukan artikel menarik seputar digital marketing dan pengembangan usaha.</p>
         </div>
-
         <div className="relative group">
           {showLeft && (
-            <button
-              onClick={() => scroll('left')}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur rounded-full p-2 shadow-md hover:bg-background transition-all -ml-4 md:-ml-6"
-            >
-              <ChevronLeft className="w-6 h-6" />
+            <button onClick={() => scroll('left')} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur rounded-full p-2 shadow-lg opacity-0 group-hover:opacity-100 transition">
+              <ChevronLeft className="w-5 h-5" />
             </button>
           )}
           {showRight && (
-            <button
-              onClick={() => scroll('right')}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur rounded-full p-2 shadow-md hover:bg-background transition-all -mr-4 md:-mr-6"
-            >
-              <ChevronRight className="w-6 h-6" />
+            <button onClick={() => scroll('right')} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur rounded-full p-2 shadow-lg opacity-0 group-hover:opacity-100 transition">
+              <ChevronRight className="w-5 h-5" />
             </button>
           )}
-          <div
-            ref={scrollRef}
-            className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 scrollbar-hide"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {articles.map((a) => (
-              <div key={a.id} className="min-w-[280px] sm:min-w-[320px] md:min-w-[380px] snap-start">
-                <Card className="overflow-hidden hover:shadow-xl hover:shadow-primary/10 transition-all border-border/60 h-full flex flex-col">
-                  <div className="aspect-video bg-muted overflow-hidden">
-                    <img src={a.thumbnail} alt={a.title} className="w-full h-full object-cover hover:scale-105 transition duration-500" />
-                  </div>
-                  <CardContent className="p-5 flex flex-col flex-grow">
-                    <Badge variant="outline" className="text-xs w-fit">{a.category}</Badge>
-                    <h3 className="font-semibold text-base mt-3 line-clamp-2">{a.title}</h3>
-                    <p className="text-sm text-muted-foreground mt-2 line-clamp-3 flex-grow">{a.excerpt}</p>
-                    <Button 
-                      variant="link" 
-                      className="mt-3 p-0 h-auto text-primary justify-start" 
-                      onClick={() => onReadMore(a)}
-                    >
-                      Baca selengkapnya →
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            ))}
+          <div ref={scrollRef} className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 scrollbar-hide" onScroll={checkScroll}>
+            {articles.map((a) => {
+              const isExpanded = expandedId === a.id
+              return (
+                <div key={a.id} className="min-w-[280px] sm:min-w-[320px] md:min-w-[380px] snap-start">
+                  <Card className="overflow-hidden hover:shadow-xl hover:shadow-primary/10 transition-all border-border/60 h-full flex flex-col">
+                    <div className="aspect-video bg-muted overflow-hidden">
+                      <img src={a.thumbnail} alt={a.title} className="w-full h-full object-cover hover:scale-105 transition duration-500" />
+                    </div>
+                    <CardContent className="p-5 flex flex-col flex-grow">
+                      <Badge variant="outline" className="text-xs w-fit">{a.category}</Badge>
+                      <h3 className="font-semibold text-base mt-3 line-clamp-2">{a.title}</h3>
+                      {!isExpanded ? (
+                        <>
+                          <p className="text-sm text-muted-foreground mt-2 line-clamp-3 flex-grow">{a.excerpt}</p>
+                          <Button variant="link" className="mt-3 p-0 h-auto text-primary justify-start" onClick={() => handleToggleExpand(a)}>
+                            Baca selengkapnya →
+                          </Button>
+                        </>
+                      ) : (
+                        <div className="mt-3 flex-grow">
+                          <div className="text-sm text-muted-foreground whitespace-pre-line">
+                            {a.content}
+                          </div>
+                          <Button variant="link" className="mt-3 p-0 h-auto text-primary justify-start" onClick={() => handleToggleExpand(a)}>
+                            Tutup ↑
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>
@@ -291,53 +289,7 @@ function ArticleSlider({ articles, onReadMore }) {
   )
 }
 
-function Catalog({ demos, categories, whatsapp, onPesan, onDetail }) {
-  const [cat, setCat] = useState('all')
-  const filtered = useMemo(() => cat === 'all' ? demos : demos.filter(d => d.categorySlug === cat), [demos, cat])
-  return (
-    <section id="katalog" className="py-20 bg-secondary/30">
-      <div className="container mx-auto px-4">
-        <div className="text-center max-w-2xl mx-auto mb-10">
-          <Badge variant="outline" className="mb-4">Katalog Website</Badge>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Lihat Demo Website Kami</h2>
-          <p className="mt-4 text-muted-foreground">Pilih template sesuai bisnis Anda. Bisa custom sesuai keinginan.</p>
-        </div>
-        <div className="flex flex-wrap justify-center gap-2 mb-10">
-          <Button size="sm" variant={cat === 'all' ? 'default' : 'outline'} onClick={() => setCat('all')} className={cat === 'all' ? 'bg-primary text-primary-foreground' : ''}>Semua</Button>
-          {categories.map(c => (
-            <Button key={c.slug} size="sm" variant={cat === c.slug ? 'default' : 'outline'} onClick={() => setCat(c.slug)} className={cat === c.slug ? 'bg-primary text-primary-foreground' : ''}>
-              {c.name}
-            </Button>
-          ))}
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.slice(0, 9).map(d => (
-            <Card key={d.id} className="overflow-hidden group hover:shadow-2xl hover:shadow-primary/10 transition-all border-border/60">
-              <div className="aspect-video overflow-hidden bg-muted relative">
-                <img src={d.thumbnail} alt={d.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                <Badge className="absolute top-3 left-3 bg-background/90 text-foreground backdrop-blur">{d.category}</Badge>
-              </div>
-              <CardContent className="p-5">
-                <h3 className="font-semibold text-lg">{d.name}</h3>
-                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{d.description}</p>
-                <div className="mt-3 text-primary font-bold">{formatRupiah(d.price)}</div>
-                <div className="mt-4 flex gap-2">
-                  <Button size="sm" variant="outline" className="flex-1 rounded-full" onClick={() => onDetail(d)}>Detail</Button>
-                  <Button size="sm" className="flex-1 bg-primary text-primary-foreground rounded-full" onClick={() => onPesan(d)}>Pesan</Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        {filtered.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">Belum ada demo untuk kategori ini.</div>
-        )}
-      </div>
-    </section>
-  )
-}
-
-function Packages({ packages, onPesan }) {
+function Packages({ packages = [], onPesan }) {
   return (
     <section id="paket" className="py-20">
       <div className="container mx-auto px-4">
@@ -360,7 +312,7 @@ function Packages({ packages, onPesan }) {
                   <span className="text-3xl font-bold">{formatRupiah(p.price)}</span>
                 </div>
                 <ul className="mt-6 space-y-3">
-                  {p.features.map((f, j) => (
+                  {(p.features || []).map((f, j) => (
                     <li key={j} className="flex items-start gap-2 text-sm">
                       <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                       <span>{f}</span>
@@ -379,7 +331,7 @@ function Packages({ packages, onPesan }) {
   )
 }
 
-function Services({ services, onPesan }) {
+function Services({ services = [], onPesan }) {
   return (
     <section id="layanan" className="py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
@@ -410,7 +362,7 @@ function Services({ services, onPesan }) {
   )
 }
 
-function Testimonials({ list }) {
+function Testimonials({ list = [] }) {
   return (
     <section className="py-20">
       <div className="container mx-auto px-4">
@@ -440,7 +392,7 @@ function Testimonials({ list }) {
   )
 }
 
-function FAQ({ list }) {
+function FAQ({ list = [] }) {
   return (
     <section id="faq" className="py-20">
       <div className="container mx-auto px-4 max-w-3xl">
@@ -471,7 +423,7 @@ function FAQ({ list }) {
   )
 }
 
-function InquiryForm({ whatsapp, prefilled, onSent, services = [], packages = [], demos = [] }) {
+function InquiryForm({ whatsapp, prefilled, onSent, services = [], packages = [] }) {
   const [form, setForm] = useState({ 
     name: '', whatsapp: '', email: '', service: prefilled?.name || '', 
     businessType: '', domicile: '', message: '' 
@@ -485,9 +437,9 @@ function InquiryForm({ whatsapp, prefilled, onSent, services = [], packages = []
 
   const serviceOptions = useMemo(() => {
     const pkgNames = (packages || []).map(p => p.name);
-    const demoNames = (demos || []).map(d => d.name);
-    return [...new Set([...pkgNames, ...demoNames])];
-  }, [packages, demos]);
+    // demos sudah dihapus total
+    return [...new Set([...pkgNames])];
+  }, [packages]);
 
   const toggleAdditionalService = (serviceName) => {
     setAdditionalServices(prev =>
@@ -578,7 +530,7 @@ function InquiryForm({ whatsapp, prefilled, onSent, services = [], packages = []
   );
 }
 
-function Contact({ whatsapp, services, packages, demos }) {
+function Contact({ whatsapp, services = [], packages = [] }) {
   return (
     <section id="kontak" className="py-20 bg-gradient-to-br from-primary/5 via-background to-primary/5">
       <div className="container mx-auto px-4">
@@ -606,7 +558,7 @@ function Contact({ whatsapp, services, packages, demos }) {
             <CardContent className="p-6 md:p-8">
               <h3 className="font-bold text-xl mb-1">Konsultasi Gratis</h3>
               <p className="text-sm text-muted-foreground mb-6">Isi form di bawah, kami akan menghubungi via WhatsApp.</p>
-              <InquiryForm whatsapp={whatsapp} services={services} packages={packages} demos={demos} />
+              <InquiryForm whatsapp={whatsapp} services={services} packages={packages} />
             </CardContent>
           </Card>
         </div>
@@ -621,10 +573,13 @@ function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-4 gap-8">
           <div>
-            <div className="flex items-center gap-2 font-bold text-xl mb-3">
-              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground"><Rocket className="w-5 h-5" /></div>
-              <span className="gradient-text">Webku</span>
-            </div>
+          <div className="h-20 w-auto flex items-center justify-start overflow-hidden">
+            <img 
+              src="https://res.cloudinary.com/dpaowxbve/image/upload/v1781960156/Logoaaazz_6_ynhb0m.gif" 
+              alt="Logo Jati Damai" 
+              className="h-full w-auto object-contain"
+            />
+          </div>
             <p className="text-sm text-muted-foreground">Website Profesional untuk UMKM dan Bisnis Modern.</p>
           </div>
           <div>
@@ -672,8 +627,6 @@ function WhatsAppFloating({ whatsapp }) {
 
 export default function App() {
   const [loading, setLoading] = useState(true)
-  const [categories, setCategories] = useState([])
-  const [demos, setDemos] = useState([])
   const [packages, setPackages] = useState([])
   const [services, setServices] = useState([])
   const [testimonials, setTestimonials] = useState([])
@@ -682,16 +635,13 @@ export default function App() {
   const [whatsapp, setWhatsapp] = useState(WA_DEFAULT)
   const [stats, setStats] = useState(null)
   const [orderOpen, setOrderOpen] = useState(false)
-  const [detail, setDetail] = useState(null)
   const [articleDetail, setArticleDetail] = useState(null)
   const [prefilled, setPrefilled] = useState(null)
 
- useEffect(() => {
+  useEffect(() => {
     (async () => {
       try {
-        const [cats, dms, pkg, svc, tst, fq, art, st] = await Promise.all([
-          api('categories'),
-          api('demos'),
+        const [pkg, svc, tst, fq, art, st] = await Promise.all([
           api('packages'),
           api('services'),
           api('testimonials'),
@@ -699,18 +649,26 @@ export default function App() {
           api('articles'),
           api('settings'),
         ])
-        setCategories(cats)
-        setDemos(dms)
-        setPackages(pkg)
-        setServices(svc)
-        setTestimonials(tst)
-        setFaqs(fq)
-        setArticles(art)
+        // Pastikan data yang diterima adalah array, jika tidak gunakan []
+        setPackages(Array.isArray(pkg) ? pkg : [])
+        setServices(Array.isArray(svc) ? svc : [])
+        setTestimonials(Array.isArray(tst) ? tst : [])
+        setFaqs(Array.isArray(fq) ? fq : [])
+        setArticles(Array.isArray(art) ? art : [])
         if (st?.settings?.whatsapp) setWhatsapp(st.settings.whatsapp)
         if (st?.stats) setStats(st.stats)
         api('track', { method: 'POST' }).catch(() => {})
         setLoading(false)
-      } catch (e) { console.error(e); setLoading(false) }
+      } catch (e) { 
+        console.error(e)
+        // Jika error, tetap set state kosong agar tidak crash
+        setPackages([])
+        setServices([])
+        setTestimonials([])
+        setFaqs([])
+        setArticles([])
+        setLoading(false)
+      }
     })()
   }, [])
 
@@ -733,12 +691,11 @@ export default function App() {
         <Advantages />
         <Steps />
         <ArticleSlider articles={articles} onReadMore={setArticleDetail} />
-        <Catalog demos={demos} categories={categories} whatsapp={whatsapp} onPesan={openOrder} onDetail={setDetail} />
         <Packages packages={packages} onPesan={openOrder} />
         <Services services={services} onPesan={openOrder} />
         <Testimonials list={testimonials} />
         <FAQ list={faqs} />
-        <Contact whatsapp={whatsapp} services={services} packages={packages} demos={demos} />
+        <Contact whatsapp={whatsapp} services={services} packages={packages} />
       </main>
       <Footer />
       <WhatsAppFloating whatsapp={whatsapp} />
@@ -750,120 +707,67 @@ export default function App() {
             <DialogTitle>Form Pemesanan</DialogTitle>
             <DialogDescription>Isi data Anda, kami akan menghubungi via WhatsApp.</DialogDescription>
           </DialogHeader>
-          <InquiryForm whatsapp={whatsapp} prefilled={prefilled} onSent={() => setOrderOpen(false)} services={services} packages={packages} demos={demos} />
+          <InquiryForm whatsapp={whatsapp} prefilled={prefilled} onSent={() => setOrderOpen(false)} services={services} packages={packages} />
         </DialogContent>
       </Dialog>
 
-      {/* Dialog untuk detail demo */}
-      <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          {detail && (
+      {/* Dialog untuk detail artikel */}
+      <Dialog open={!!articleDetail} onOpenChange={(o) => !o && setArticleDetail(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0 sm:p-6">
+          {articleDetail && (
             <>
-              <DialogHeader>
-                <DialogTitle className="text-2xl">{detail.name}</DialogTitle>
-                <DialogDescription>
-                  <Badge variant="outline" className="mr-2">{detail.category}</Badge>
-                  <span className="text-primary font-bold">{formatRupiah(detail.price)}</span>
-                </DialogDescription>
-              </DialogHeader>
-              <div className="aspect-video bg-muted rounded-xl overflow-hidden">
-                <img src={detail.thumbnail} alt={detail.name} className="w-full h-full object-cover" />
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Deskripsi</h4>
-                <p className="text-sm text-muted-foreground">{detail.description}</p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Fitur</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  {(detail.features || []).map((f, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm"><CheckCircle2 className="w-4 h-4 text-primary" /> {f}</div>
-                  ))}
+              <div className="relative aspect-[16/9] w-full overflow-hidden rounded-t-xl sm:rounded-xl">
+                <img 
+                  src={articleDetail.thumbnail} 
+                  alt={articleDetail.title} 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4">
+                  <Badge variant="outline" className="bg-background/80 backdrop-blur text-foreground border-none">
+                    {articleDetail.category}
+                  </Badge>
+                  <h2 className="text-xl sm:text-2xl font-bold text-white mt-2 line-clamp-2">
+                    {articleDetail.title}
+                  </h2>
                 </div>
               </div>
-              <div className="flex gap-2">
-                {detail.demoUrl && (
-                  <Button variant="outline" asChild className="flex-1">
-                    <a href={detail.demoUrl} target="_blank">Lihat Demo</a>
+              <div className="px-5 pb-6 pt-2 sm:px-6">
+                <div className="flex items-center gap-3 text-xs text-muted-foreground mb-4 border-b pb-3">
+                  <span>📅 {new Date(articleDetail.createdAt).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                  <span>👤 Admin Webku</span>
+                </div>
+                <div className="bg-secondary/50 rounded-lg p-4 mb-5 italic text-sm border-l-4 border-primary">
+                  {articleDetail.excerpt}
+                </div>
+                <div 
+                  className="article-content"
+                  dangerouslySetInnerHTML={{ __html: articleDetail.content.replace(/\n/g, '<br/>') }}
+                />
+                <div className="flex flex-col sm:flex-row gap-3 mt-8 pt-4 border-t">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setArticleDetail(null)}
+                    className="flex-1"
+                  >
+                    Tutup
                   </Button>
-                )}
-                <Button onClick={() => { setDetail(null); openOrder(detail) }} className="flex-1 bg-primary text-primary-foreground">
-                  <MessageCircle className="w-4 h-4 mr-2" /> Pesan Sekarang
-                </Button>
+                  <Button 
+                    onClick={() => {
+                      setArticleDetail(null);
+                      openOrder({ name: `Artikel: ${articleDetail.title}` });
+                    }} 
+                    className="flex-1 bg-primary text-primary-foreground"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Konsultasi Sekarang
+                  </Button>
+                </div>
               </div>
             </>
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Dialog untuk detail artikel - TAMBAHAN BARU */}
-{/* Modal Detail Artikel yang DIPERBAIKI */}
-<Dialog open={!!articleDetail} onOpenChange={(o) => !o && setArticleDetail(null)}>
-  <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0 sm:p-6">
-    {articleDetail && (
-      <>
-        {/* Header dengan gambar hero */}
-        <div className="relative aspect-[16/9] w-full overflow-hidden rounded-t-xl sm:rounded-xl">
-          <img 
-            src={articleDetail.thumbnail} 
-            alt={articleDetail.title} 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          <div className="absolute bottom-4 left-4 right-4">
-            <Badge variant="outline" className="bg-background/80 backdrop-blur text-foreground border-none">
-              {articleDetail.category}
-            </Badge>
-            <h2 className="text-xl sm:text-2xl font-bold text-white mt-2 line-clamp-2">
-              {articleDetail.title}
-            </h2>
-          </div>
-        </div>
-
-        {/* Konten artikel */}
-        <div className="px-5 pb-6 pt-2 sm:px-6">
-          {/* Meta informasi */}
-          <div className="flex items-center gap-3 text-xs text-muted-foreground mb-4 border-b pb-3">
-            <span>📅 {new Date(articleDetail.createdAt).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-            <span>👤 Admin Webku</span>
-          </div>
-
-          {/* Excerpt (ringkasan) */}
-          <div className="bg-secondary/50 rounded-lg p-4 mb-5 italic text-sm border-l-4 border-primary">
-            {articleDetail.excerpt}
-          </div>
-
-          {/* Konten lengkap dengan styling rich text */}
-          <div 
-            className="article-content"
-            dangerouslySetInnerHTML={{ __html: articleDetail.content.replace(/\n/g, '<br/>') }}
-          />
-
-          {/* Tombol aksi */}
-          <div className="flex flex-col sm:flex-row gap-3 mt-8 pt-4 border-t">
-            <Button 
-              variant="outline" 
-              onClick={() => setArticleDetail(null)}
-              className="flex-1"
-            >
-              Tutup
-            </Button>
-            <Button 
-              onClick={() => {
-                setArticleDetail(null);
-                openOrder({ name: `Artikel: ${articleDetail.title}` });
-              }} 
-              className="flex-1 bg-primary text-primary-foreground"
-            >
-              <MessageCircle className="w-4 h-4 mr-2" />
-              Konsultasi Sekarang
-            </Button>
-          </div>
-        </div>
-      </>
-    )}
-  </DialogContent>
-</Dialog>
     </div>
   )
 }
