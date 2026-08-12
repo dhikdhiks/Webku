@@ -96,7 +96,7 @@ function Hero({ stats, onCTAClick, whatsapp }) {
                 <MessageCircle className="w-5 h-5 mr-2" /> Chat WhatsApp Sekarang
               </Button>
             </div>
-            <div className="mt-10 grid grid-cols-4 gap-4 max-w-lg">
+            {/* <div className="mt-10 grid grid-cols-4 gap-4 max-w-lg">
               {[
                 { v: stats?.projects || 1247, l: 'Proyek' },
                 { v: stats?.happyClients || 980, l: 'Klien' },
@@ -108,7 +108,7 @@ function Hero({ stats, onCTAClick, whatsapp }) {
                   <div className="text-xs text-muted-foreground mt-1">{s.l}</div>
                 </div>
               ))}
-            </div>
+            </div> */}
           </div>
           <div className="relative">
             <div className="absolute -inset-8 bg-gradient-to-tr from-primary/30 via-primary/10 to-transparent rounded-full blur-3xl opacity-70" />
@@ -556,7 +556,9 @@ function Contact({ whatsapp, services = [], packages = [] }) {
           </div>
           <Card className="border-primary/20 shadow-2xl shadow-primary/10">
             <CardContent className="p-6 md:p-8">
+              
               <h3 className="font-bold text-xl mb-1">Konsultasi Gratis</h3>
+
               <p className="text-sm text-muted-foreground mb-6">Isi form di bawah, kami akan menghubungi via WhatsApp.</p>
               <InquiryForm whatsapp={whatsapp} services={services} packages={packages} />
             </CardContent>
