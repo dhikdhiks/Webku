@@ -100,53 +100,6 @@ Website dirancang agar dapat digunakan pada berbagai perangkat:
 
 ---
 
-## Website Sections
-
-Webku terdiri dari beberapa bagian utama:
-
-```text
-Beranda
-├── Hero Section
-├── Keunggulan
-└── Call to Action
-
-Paket
-├── Landing Page
-├── Company Profile
-├── Website UMKM
-├── Klinik
-├── Klub Bola / Futsal
-├── Sekolah
-├── Toko Online
-└── Website Custom
-
-Layanan
-├── Desain Logo
-├── Banner Promosi
-├── Poster
-├── Brosur
-├── Katalog PDF
-├── Company Profile PDF
-├── Desain Feed Instagram
-├── Desain Kemasan
-├── Kartu Nama
-├── Undangan Digital
-└── Optimasi Google Business
-
-Blog
-├── Domain
-├── Hosting
-├── Website untuk UMKM
-├── Digital Marketing
-└── SEO
-
-Tentang
-FAQ
-Kontak
-```
-
----
-
 ## Tech Stack
 
 Project ini dibangun menggunakan teknologi berikut:
