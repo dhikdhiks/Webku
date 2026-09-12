@@ -68,7 +68,7 @@ async function ensureSeed(db) {
   const thumbs = [
     'https://images.pexels.com/photos/18105/pexels-photo.jpg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
     'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=940&q=80',
-    'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=940&q=80',
+    'https://i.ibb.co.com/m5LDtp70/laptop.avif',
     'https://images.pexels.com/photos/15717263/pexels-photo-15717263.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
     'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=940&q=80',
     'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=940&q=80',

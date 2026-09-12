@@ -14,16 +14,46 @@ import { api, formatRupiah, waLink } from '@/lib/api'
 import {
   Rocket, MessageCircle, Sparkles, Globe, Smartphone, Search, ShieldCheck, Zap, Headset,
   CheckCircle2, ArrowRight, Star, Phone, Mail, MapPin, Send, Quote, BookOpen,
-  Palette, Image as ImageIcon, FileImage, FileText, Briefcase, Instagram, Package as PackageIcon,
+  Palette, Image as ImageIcon, FileImage, FileText, Briefcase, Package as PackageIcon,
   CreditCard, Menu as MenuIcon, X, ChevronLeft, ChevronRight,
 } from 'lucide-react'
 
 const WA_DEFAULT = '6281227225178'
 
+const PX_WEBDEV = 'https://images.pexels.com/photos/7988114/pexels-photo-7988114.jpeg'
+const PX_TEAM = 'https://images.pexels.com/photos/8117465/pexels-photo-8117465.jpeg'
+const PX_LAPTOP = 'https://images.pexels.com/photos/15717263/pexels-photo-15717263.jpeg'
+const US_LAPTOP = 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853'
+
+const COLLAGE_SIZES = '(min-width: 1280px) 340px, (min-width: 1024px) 240px, calc(50vw - 24px)'
+
+const pexelsSrc = (base, widths) =>
+  widths.map(w => `${base}?auto=compress&cs=tinysrgb&w=${w} ${w}w`).join(', ')
+
+const unsplashSrc = (base, widths) =>
+  widths.map(w => `${base}?auto=format&fit=crop&q=60&w=${w} ${w}w`).join(', ')
+
 const serviceIcons = {
-  Palette, Image: ImageIcon, FileImage, FileText, BookOpen, Briefcase, Instagram, Package: PackageIcon,
+  Palette, Image: ImageIcon, FileImage, FileText, BookOpen, Briefcase, Package: PackageIcon,
   CreditCard, Mail, MapPin,
 }
+const InstagramIcon = ({ className, ...props }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+    {...props}
+  >
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+  </svg>
+)
 
 function Navbar({ onCTAClick, whatsapp }) {
   const [open, setOpen] = useState(false)
@@ -43,6 +73,10 @@ function Navbar({ onCTAClick, whatsapp }) {
             <img 
               src="https://res.cloudinary.com/dpaowxbve/image/upload/v1781960156/Logoaaazz_6_ynhb0m.gif" 
               alt="Logo Jati Damai" 
+              width="1000"
+              height="500"
+              fetchPriority="low"
+              decoding="async"
               className="h-full w-auto object-contain"
             />
           </div>
@@ -114,12 +148,52 @@ function Hero({ stats, onCTAClick, whatsapp }) {
             <div className="absolute -inset-8 bg-gradient-to-tr from-primary/30 via-primary/10 to-transparent rounded-full blur-3xl opacity-70" />
             <div className="relative grid grid-cols-2 gap-4">
               <div className="space-y-4">
-                <img src="https://images.pexels.com/photos/7988114/pexels-photo-7988114.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940" alt="web dev" className="rounded-2xl shadow-2xl aspect-[3/4] object-cover" />
-                <img src="https://images.pexels.com/photos/15717263/pexels-photo-15717263.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940" alt="laptop" className="rounded-2xl shadow-2xl aspect-square object-cover" />
+                <img
+                  src={`${PX_WEBDEV}?auto=compress&cs=tinysrgb&w=600`}
+                  srcSet={pexelsSrc(PX_WEBDEV, [300, 450, 600, 800])}
+                  sizes={COLLAGE_SIZES}
+                  width="600"
+                  height="400"
+                  fetchPriority="high"
+                  decoding="async"
+                  alt="web dev"
+                  className="rounded-2xl shadow-2xl aspect-[3/4] object-cover"
+                />
+                <img
+                  src={`${PX_LAPTOP}?auto=compress&cs=tinysrgb&w=600`}
+                  srcSet={pexelsSrc(PX_LAPTOP, [300, 450, 600, 800])}
+                  sizes={COLLAGE_SIZES}
+                  width="600"
+                  height="452"
+                  loading="lazy"
+                  decoding="async"
+                  alt="laptop"
+                  className="rounded-2xl shadow-2xl aspect-square object-cover"
+                />
               </div>
               <div className="space-y-4 pt-12">
-                <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=940&q=80" alt="laptop" className="rounded-2xl shadow-2xl aspect-square object-cover" />
-                <img src="https://images.pexels.com/photos/8117465/pexels-photo-8117465.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940" alt="team" className="rounded-2xl shadow-2xl aspect-[3/4] object-cover" />
+                <img
+                  src={`${US_LAPTOP}?auto=format&fit=crop&q=60&w=600`}
+                  srcSet={unsplashSrc(US_LAPTOP, [300, 450, 600, 800])}
+                  sizes={COLLAGE_SIZES}
+                  width="600"
+                  height="400"
+                  loading="lazy"
+                  decoding="async"
+                  alt="laptop"
+                  className="rounded-2xl shadow-2xl aspect-square object-cover"
+                />
+                <img
+                  src={`${PX_TEAM}?auto=compress&cs=tinysrgb&w=600`}
+                  srcSet={pexelsSrc(PX_TEAM, [300, 450, 600, 800])}
+                  sizes={COLLAGE_SIZES}
+                  width="600"
+                  height="400"
+                  loading="lazy"
+                  decoding="async"
+                  alt="team"
+                  className="rounded-2xl shadow-2xl aspect-[3/4] object-cover"
+                />
               </div>
             </div>
           </div>
@@ -255,7 +329,7 @@ function ArticleSlider({ articles = [], onReadMore }) {
                 <div key={a.id} className="min-w-[280px] sm:min-w-[320px] md:min-w-[380px] snap-start">
                   <Card className="overflow-hidden hover:shadow-xl hover:shadow-primary/10 transition-all border-border/60 h-full flex flex-col">
                     <div className="aspect-video bg-muted overflow-hidden">
-                      <img src={a.thumbnail} alt={a.title} className="w-full h-full object-cover hover:scale-105 transition duration-500" />
+                      <img src={a.thumbnail} alt={a.title} loading="lazy" decoding="async" className="w-full h-full object-cover hover:scale-105 transition duration-500" />
                     </div>
                     <CardContent className="p-5 flex flex-col flex-grow">
                       <Badge variant="outline" className="text-xs w-fit">{a.category}</Badge>
@@ -377,7 +451,7 @@ function Testimonials({ list = [] }) {
                 <Quote className="w-7 h-7 text-primary/40 mb-3" />
                 <p className="text-sm leading-relaxed">{t.content}</p>
                 <div className="flex items-center gap-3 mt-5 pt-5 border-t border-border/50">
-                  <img src={t.photo} alt={t.name} className="w-11 h-11 rounded-full object-cover" />
+                  <img src={t.photo} alt={t.name} loading="lazy" decoding="async" className="w-11 h-11 rounded-full object-cover" />
                   <div>
                     <div className="font-semibold text-sm">{t.name}</div>
                     <div className="text-xs text-muted-foreground">{t.business}</div>
@@ -540,25 +614,34 @@ function Contact({ whatsapp, services = [], packages = [] }) {
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Siap Bangun Website Bisnis Anda?</h2>
             <p className="mt-4 text-muted-foreground text-lg">Konsultasi gratis tanpa biaya. Tim kami akan menghubungi Anda dalam 1 jam kerja.</p>
             <div className="mt-8 space-y-4">
+              {/* WhatsApp */}
               <a href={waLink(whatsapp, 'Halo Webku, saya ingin konsultasi pembuatan website.')} target="_blank" className="flex items-center gap-3 hover:text-primary transition">
                 <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><MessageCircle className="w-5 h-5" /></div>
                 <div><div className="text-xs text-muted-foreground">WhatsApp</div><div className="font-semibold">+{whatsapp}</div></div>
               </a>
+              {/* Instagram - pakai komponen SVG sendiri */}
+              <a href="https://instagram.com/webku_" target="_blank" className="flex items-center gap-3 hover:text-primary transition">
+                <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                  <InstagramIcon className="w-5 h-5" />
+                </div>
+                <div><div className="text-xs text-muted-foreground">Instagram</div><div className="font-semibold">@webku_</div></div>
+              </a>
+              {/* Email */}
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><Mail className="w-5 h-5" /></div>
                 <div><div className="text-xs text-muted-foreground">Email</div><div className="font-semibold">webkuuuid@gmail.com</div></div>
               </div>
+              {/* Lokasi */}
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><MapPin className="w-5 h-5" /></div>
                 <div><div className="text-xs text-muted-foreground">Lokasi</div><div className="font-semibold">Yogyakarta, Indonesia</div></div>
               </div>
             </div>
           </div>
+          {/* ... form di sebelah kanan tetap sama ... */}
           <Card className="border-primary/20 shadow-2xl shadow-primary/10">
             <CardContent className="p-6 md:p-8">
-              
               <h3 className="font-bold text-xl mb-1">Konsultasi Gratis</h3>
-
               <p className="text-sm text-muted-foreground mb-6">Isi form di bawah, kami akan menghubungi via WhatsApp.</p>
               <InquiryForm whatsapp={whatsapp} services={services} packages={packages} />
             </CardContent>
@@ -579,6 +662,10 @@ function Footer() {
             <img 
               src="https://res.cloudinary.com/dpaowxbve/image/upload/v1781960156/Logoaaazz_6_ynhb0m.gif" 
               alt="Logo Jati Damai" 
+              width="1000"
+              height="500"
+              fetchPriority="low"
+              decoding="async"
               className="h-full w-auto object-contain"
             />
           </div>
@@ -628,7 +715,6 @@ function WhatsAppFloating({ whatsapp }) {
 }
 
 export default function App() {
-  const [loading, setLoading] = useState(true)
   const [packages, setPackages] = useState([])
   const [services, setServices] = useState([])
   const [testimonials, setTestimonials] = useState([])
@@ -660,7 +746,6 @@ export default function App() {
         if (st?.settings?.whatsapp) setWhatsapp(st.settings.whatsapp)
         if (st?.stats) setStats(st.stats)
         api('track', { method: 'POST' }).catch(() => {})
-        setLoading(false)
       } catch (e) { 
         console.error(e)
         // Jika error, tetap set state kosong agar tidak crash
@@ -669,18 +754,9 @@ export default function App() {
         setTestimonials([])
         setFaqs([])
         setArticles([])
-        setLoading(false)
       }
     })()
   }, [])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
 
   const openOrder = (item) => { setPrefilled(item); setOrderOpen(true) }
   const onCTA = () => { setPrefilled(null); setOrderOpen(true) }
@@ -692,11 +768,11 @@ export default function App() {
         <Hero stats={stats} onCTAClick={onCTA} whatsapp={whatsapp} />
         <Advantages />
         <Steps />
-        <ArticleSlider articles={articles} onReadMore={setArticleDetail} />
-        <Packages packages={packages} onPesan={openOrder} />
-        <Services services={services} onPesan={openOrder} />
-        <Testimonials list={testimonials} />
-        <FAQ list={faqs} />
+        {articles.length > 0 && <ArticleSlider articles={articles} onReadMore={setArticleDetail} />}
+        {packages.length > 0 && <Packages packages={packages} onPesan={openOrder} />}
+        {services.length > 0 && <Services services={services} onPesan={openOrder} />}
+        {testimonials.length > 0 && <Testimonials list={testimonials} />}
+        {faqs.length > 0 && <FAQ list={faqs} />}
         <Contact whatsapp={whatsapp} services={services} packages={packages} />
       </main>
       <Footer />
