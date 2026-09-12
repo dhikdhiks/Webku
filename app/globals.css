@@ -11,6 +11,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 25% 12%;
     --primary: 162 70% 63%;
+    --primary-strong: 162 70% 23%;
     --primary-foreground: 222 47% 11%;
     --secondary: 162 60% 96%;
     --secondary-foreground: 222 47% 11%;
@@ -38,6 +39,7 @@
     --popover: 222 47% 10%;
     --popover-foreground: 0 0% 98%;
     --primary: 162 70% 63%;
+    --primary-strong: 162 70% 75%;
     --primary-foreground: 222 47% 11%;
     --secondary: 217 33% 17%;
     --secondary-foreground: 0 0% 98%;
@@ -60,10 +62,14 @@
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #60e3bb 0%, #2dd4bf 50%, #14b8a6 100%);
+  background: linear-gradient(135deg, #0f766e 0%, #115e59 50%, #134e4a 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.text-primary-strong {
+  color: hsl(var(--primary-strong));
 }
 
 .hero-glow {
@@ -117,7 +123,7 @@
 }
 
 .article-content a {
-  color: hsl(var(--primary));
+  color: hsl(var(--primary-strong));
   text-decoration: underline;
 }
 
