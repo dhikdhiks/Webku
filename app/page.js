@@ -88,7 +88,8 @@ function Navbar({ onCTAClick, whatsapp }) {
           <Button onClick={onCTAClick} className="hidden md:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg shadow-primary/30">
             <MessageCircle className="w-4 h-4 mr-2" /> Konsultasi Gratis
           </Button>
-          <button className="md:hidden p-2" onClick={() => setOpen(!open)}>
+          <button className="md:hidden p-2" onClick={() => setOpen(!open)} aria-expanded={open}
+            aria-controls="mobile-menu" aria-label={open ? "Tutup menu navigasi" : "Buka menu navigasi"}>
             {open ? <X className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
           </button>
         </div>
@@ -313,12 +314,12 @@ function ArticleSlider({ articles = [], onReadMore }) {
         </div>
         <div className="relative group">
           {showLeft && (
-            <button onClick={() => scroll('left')} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur rounded-full p-2 shadow-lg opacity-0 group-hover:opacity-100 transition">
+            <button onClick={() => scroll('left')} aria-label="Artikel sebelumnya" className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur rounded-full p-2 shadow-lg opacity-0 group-hover:opacity-100 transition">
               <ChevronLeft className="w-5 h-5" />
             </button>
           )}
           {showRight && (
-            <button onClick={() => scroll('right')} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur rounded-full p-2 shadow-lg opacity-0 group-hover:opacity-100 transition">
+            <button onClick={() => scroll('right')} aria-label="Artikel berikutnya" className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur rounded-full p-2 shadow-lg opacity-0 group-hover:opacity-100 transition">
               <ChevronRight className="w-5 h-5" />
             </button>
           )}
@@ -707,6 +708,7 @@ function Footer() {
 function WhatsAppFloating({ whatsapp }) {
   return (
     <a href={waLink(whatsapp, 'Halo Webku, saya ingin konsultasi.')} target="_blank"
+      aria-label="Hubungi Webku melalui WhatsApp"
       className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center shadow-2xl shadow-green-500/40 hover:scale-110 transition">
       <MessageCircle className="w-7 h-7" />
       <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50 animate-ping" />
