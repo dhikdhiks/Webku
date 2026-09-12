@@ -11,7 +11,7 @@ import { MessageCircle, MenuIcon, X, Sparkles } from 'lucide-react'
 
 const WA_DEFAULT = '6281227225178'
 
-const LOGO_URL = 'https://res.cloudinary.com/dpaowxbve/image/upload/w_320,f_png/v1789192122/Webkulogo_mzvidq.gif'
+const LOGO_URL = 'https://res.cloudinary.com/dpaowxbve/image/upload/v1789192122/Webkulogo_mzvidq.gif'
 
 const PX_WEBDEV = 'https://images.pexels.com/photos/7988114/pexels-photo-7988114.jpeg?auto=compress&cs=tinysrgb&w=2400'
 const PX_TEAM = 'https://images.pexels.com/photos/8117465/pexels-photo-8117465.jpeg?auto=compress&cs=tinysrgb&w=2400'
@@ -46,7 +46,7 @@ function Navbar({ onCTAClick }) {
           <div className="h-20 w-auto flex items-center justify-start overflow-hidden">
             <img
               src={LOGO_URL}
-              alt="Logo Jati Damai"
+              alt="Logo Webku"
               width="160"
               height="80"
               fetchPriority="low"
@@ -168,7 +168,7 @@ function Footer() {
           <div className="h-20 w-auto flex items-center justify-start overflow-hidden">
             <img
               src={LOGO_URL}
-              alt="Logo Jati Damai"
+              alt="Logo Webku"
               width="160"
               height="80"
               fetchPriority="low"
