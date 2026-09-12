@@ -1,7 +1,7 @@
 # Webku — Website Jasa Pembuatan Website
 
 <p align="center">
-  <img src="https://res.cloudinary.com/dpaowxbve/image/upload/v1781960156/Logoaaazz_6_ynhb0m.gif" alt="Webku Logo" width="120" />
+  <img src="https://res.cloudinary.com/dpaowxbve/image/upload/v1789192122/Webkulogo_mzvidq.gif" alt="Webku Logo" width="120" />
 </p>
 
 <p align="center">

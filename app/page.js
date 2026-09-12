@@ -71,7 +71,7 @@ function Navbar({ onCTAClick, whatsapp }) {
         <a href="#beranda" className="flex items-center">
           <div className="h-20 w-auto flex items-center justify-start overflow-hidden">
             <img 
-              src="https://res.cloudinary.com/dpaowxbve/image/upload/v1781960156/Logoaaazz_6_ynhb0m.gif" 
+              src="https://res.cloudinary.com/dpaowxbve/image/upload/v1789192122/Webkulogo_mzvidq.gif" 
               alt="Logo Jati Damai" 
               width="1000"
               height="500"
@@ -661,7 +661,7 @@ function Footer() {
           <div>
           <div className="h-20 w-auto flex items-center justify-start overflow-hidden">
             <img 
-              src="https://res.cloudinary.com/dpaowxbve/image/upload/v1781960156/Logoaaazz_6_ynhb0m.gif" 
+              src="https://res.cloudinary.com/dpaowxbve/image/upload/v1789192122/Webkulogo_mzvidq.gif" 
               alt="Logo Jati Damai" 
               width="1000"
               height="500"
